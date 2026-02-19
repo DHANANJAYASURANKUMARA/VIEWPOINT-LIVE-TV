@@ -4,22 +4,19 @@
   --background: #000000;
   --foreground: #f8fafc;
 
-  /* Deep Premium Dark Palette */
-  --vpoint-black: #000000;
-  --vpoint-dark: #050510;
-  --vpoint-navy: #0a0a1a;
+  /* Midnight Aurora Palette */
+  --aurora-midnight: #020617;
+  --aurora-deep: #050a24;
+  --aurora-emerald: #10b981;
+  --aurora-teal: #14b8a6;
+  --aurora-purple: #8b5cf6;
+  --aurora-indigo: #6366f1;
 
-  /* Neon Accents */
-  --neon-cyan: #22d3ee;
-  --neon-magenta: #ff2d55;
-  --neon-purple: #a855f7;
-  --vpoint-accent: #6366f1;
-
-  /* Enhanced Glassmorphism - Ultra Engine v3 */
-  --glass-bg: rgba(10, 10, 26, 0.35);
-  --glass-border: rgba(255, 255, 255, 0.08);
-  --glass-reflection: rgba(255, 255, 255, 0.03);
-  --glass-inner-glow: rgba(34, 211, 238, 0.05);
+  /* Enhanced Glassmorphism v4 */
+  --glass-bg: rgba(15, 23, 42, 0.4);
+  --glass-border: rgba(255, 255, 255, 0.05);
+  --glass-reflection: rgba(255, 255, 255, 0.02);
+  --glass-inner-glow: rgba(16, 185, 129, 0.03);
 }
 
 .theme-magenta {
@@ -38,13 +35,18 @@
   --color-neon-purple: var(--neon-purple);
   --color-vpoint-accent: var(--vpoint-accent);
 
+  --color-aurora-midnight: var(--aurora-midnight);
+  --color-aurora-emerald: var(--aurora-emerald);
+  --color-aurora-teal: var(--aurora-teal);
+  --color-aurora-purple: var(--aurora-purple);
+
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
 }
 
 @layer base {
   body {
-    background-color: var(--vpoint-black);
+    background-color: var(--aurora-midnight);
     color: var(--foreground);
     font-family: var(--font-sans);
     overflow-x: hidden;
@@ -57,13 +59,55 @@
 @layer utilities {
   .glass {
     background: var(--glass-bg);
-    backdrop-filter: blur(50px) saturate(210%);
-    -webkit-backdrop-filter: blur(50px) saturate(210%);
+    backdrop-filter: blur(40px) saturate(180%);
+    -webkit-backdrop-filter: blur(40px) saturate(180%);
     border: 1px solid var(--glass-border);
     box-shadow:
-      0 12px 40px -12px rgba(0, 0, 0, 0.9),
+      0 8px 32px 0 rgba(0, 0, 0, 0.8),
       inset 0 1px 1px 0 var(--glass-reflection),
-      inset 0 0 20px 0 var(--glass-inner-glow);
+      inset 0 0 15px 0 var(--glass-inner-glow);
+  }
+
+  .aurora-bg {
+    background:
+      radial-gradient(circle at 0% 0%, rgba(16, 185, 129, 0.15), transparent 50%),
+      radial-gradient(circle at 100% 0%, rgba(139, 92, 246, 0.15), transparent 50%),
+      radial-gradient(circle at 100% 100%, rgba(20, 184, 166, 0.15), transparent 50%),
+      radial-gradient(circle at 0% 100%, rgba(99, 102, 241, 0.15), transparent 50%),
+      var(--aurora-midnight);
+    position: relative;
+    overflow: hidden;
+  }
+
+  .aurora-bg::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: url("https://grainy-gradients.vercel.app/noise.svg");
+    opacity: 0.05;
+    pointer-events: none;
+    mix-blend-mode: overlay;
+  }
+
+  .aurora-flowing {
+    position: absolute;
+    width: 150%;
+    height: 150%;
+    background: radial-gradient(ellipse at center, rgba(16, 185, 129, 0.1), transparent 70%);
+    filter: blur(100px);
+    animation: aurora-flow 20s infinite alternate ease-in-out;
+    z-index: 0;
+    pointer-events: none;
+  }
+
+  @keyframes aurora-flow {
+    0% {
+      transform: translate(-20%, -20%) rotate(0deg);
+    }
+
+    100% {
+      transform: translate(10%, 10%) rotate(10deg);
+    }
   }
 
   .glass-dark {
