@@ -53,9 +53,6 @@ export default function LandingPage({ onLaunch }: LandingPageProps) {
                     <div className={`relative glass border border-white/5 rounded-full px-8 py-4 flex items-center justify-between transition-all duration-500 ${scrolled ? "bg-vpoint-dark/80 backdrop-blur-2xl shadow-[0_20px_50px_rgba(0,0,0,0.5)]" : "bg-transparent"}`}>
                         {/* Branding */}
                         <div className="flex items-center gap-3">
-                            <div className="w-8 h-8 bg-gradient-to-br from-neon-cyan to-neon-purple rounded-lg flex items-center justify-center shadow-[0_0_20px_rgba(34,211,238,0.3)]">
-                                <Tv size={18} className="text-white" />
-                            </div>
                             <span className="text-xl font-black text-white tracking-tighter uppercase whitespace-nowrap">VIEWPOINT</span>
                         </div>
 

@@ -153,7 +153,7 @@ export default function MainLayoutWrapper({ children }: { children: React.ReactN
                     )}
                 </AnimatePresence>
 
-                <div className={`flex-1 transition-all duration-300 ${isCinemaMode ? "" : "p-0"}`}>
+                <div className={`flex-1 overflow-y-auto custom-scrollbar transition-all duration-300 ${isCinemaMode ? "" : "p-0"}`}>
                     {children}
                 </div>
 
