@@ -4,10 +4,12 @@ import React, { useState } from "react";
 import VideoPlayer from "@/components/VideoPlayer";
 import { Tv, MousePointer2 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
+import LandingPage from "@/components/LandingPage";
 
 export default function Home() {
   const [currentUrl, setCurrentUrl] = useState("");
   const [currentTitle, setCurrentTitle] = useState("");
+  const [hasLaunched, setHasLaunched] = useState(false);
 
   React.useEffect(() => {
     const handleChannelSelect = (e: any) => {
@@ -15,12 +17,17 @@ export default function Home() {
       if (detail?.url) {
         setCurrentUrl(detail.url);
         setCurrentTitle(detail.name || "Custom Stream");
+        setHasLaunched(true);
       }
     };
 
     window.addEventListener("vpoint-channel-select", handleChannelSelect);
     return () => window.removeEventListener("vpoint-channel-select", handleChannelSelect);
   }, []);
+
+  if (!hasLaunched && !currentUrl) {
+    return <LandingPage onLaunch={() => setHasLaunched(true)} />;
+  }
 
   return (
     <div className="h-full flex items-center justify-center p-6 md:p-10">
