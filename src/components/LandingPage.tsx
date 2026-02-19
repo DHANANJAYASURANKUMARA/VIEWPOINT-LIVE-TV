@@ -285,27 +285,19 @@ export default function LandingPage({ onLaunch }: LandingPageProps) {
                         </p>
                     </div>
 
-                    <div className="flex flex-wrap items-center justify-center gap-16 opacity-40">
-                        <div className="flex flex-col gap-3">
-                            <div className="text-3xl font-mono text-white">2026.02</div>
-                            <div className="text-[10px] font-black uppercase tracking-widest">Initial Boot</div>
-                        </div>
-                        <div className="flex flex-col gap-3">
-                            <div className="text-3xl font-mono text-white">150+</div>
-                            <div className="text-[10px] font-black uppercase tracking-widest">Countries</div>
-                        </div>
-                        <div className="flex flex-col gap-3">
-                            <div className="text-3xl font-mono text-white">1M+</div>
-                            <div className="text-[10px] font-black uppercase tracking-widest">Handshakes</div>
-                        </div>
-                        <div className="flex flex-col gap-3">
-                            <div className="text-3xl font-mono text-white">2.5K</div>
-                            <div className="text-[10px] font-black uppercase tracking-widest">Signal Nodes</div>
-                        </div>
-                        <div className="flex flex-col gap-3">
-                            <div className="text-3xl font-mono text-white">99.9%</div>
-                            <div className="text-[10px] font-black uppercase tracking-widest">Uptime Integrity</div>
-                        </div>
+                    <div className="flex flex-wrap items-center justify-center gap-6">
+                        {[
+                            { value: "2026.02", label: "Initial Boot" },
+                            { value: "150+", label: "Countries" },
+                            { value: "1M+", label: "Handshakes" },
+                            { value: "2.5K", label: "Signal Nodes" },
+                            { value: "99.9%", label: "Uptime Integrity" }
+                        ].map((stat, i) => (
+                            <div key={i} className="flex flex-col gap-2 px-8 py-6 glass border border-white/10 rounded-2xl hover:bg-white/5 transition-all w-fit min-w-[180px]">
+                                <div className="text-3xl font-mono text-white">{stat.value}</div>
+                                <div className="text-[10px] font-black uppercase tracking-widest text-white/40">{stat.label}</div>
+                            </div>
+                        ))}
                     </div>
                 </div>
             </section>
