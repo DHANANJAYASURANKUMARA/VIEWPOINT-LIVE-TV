@@ -14,6 +14,7 @@ export default function MainLayoutWrapper({ children }: { children: React.ReactN
     const [theme, setTheme] = useState('cyan');
     const [isMobile, setIsMobile] = useState(false);
     const [isMounted, setIsMounted] = useState(false);
+    const [hasLaunched, setHasLaunched] = useState(false);
 
     // Handlers for custom events
     const handleCinemaToggle = useCallback((e: any) => {
@@ -41,6 +42,7 @@ export default function MainLayoutWrapper({ children }: { children: React.ReactN
         const detail = (e as CustomEvent).detail;
         if (detail?.url) {
             setActiveChannelUrl(detail.url);
+            setHasLaunched(true); // Auto-launch if a channel is selected via other means
         }
     }, []);
 
@@ -117,7 +119,7 @@ export default function MainLayoutWrapper({ children }: { children: React.ReactN
             </AnimatePresence>
 
             <AnimatePresence>
-                {(!isCinemaMode) && (
+                {(!isCinemaMode && hasLaunched) && (
                     <motion.div
                         initial={{ x: "-100%", opacity: 0 }}
                         animate={{
