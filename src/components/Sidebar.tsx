@@ -243,11 +243,11 @@ export default function Sidebar({ onClose, activeChannelUrl }: SidebarProps) {
     };
 
     return (
-        <div className="w-full lg:w-96 h-full glass border-r border-white/5 flex flex-col p-6 overflow-hidden relative shadow-[20px_0_50px_rgba(0,0,0,0.5)]">
+        <div className="w-screen lg:w-96 h-full glass border-r border-white/5 flex flex-col p-6 overflow-hidden relative shadow-[20px_0_50px_rgba(0,0,0,0.3)]">
             {/* Sidebar Branding */}
-            <div className="flex items-center justify-between mb-10">
+            <div className="flex items-center justify-between mb-8 lg:mb-10">
                 <div className="flex flex-col">
-                    <h2 className="text-xl font-black text-white tracking-tighter uppercase leading-none">
+                    <h2 className="text-sm lg:text-xl font-black text-white tracking-tighter uppercase leading-none">
                         VIEW<span className="text-neon-purple">POINT</span>
                     </h2>
                     <p className="text-[7px] font-black text-slate-500 uppercase tracking-[0.3em] mt-1">Premium Streaming</p>

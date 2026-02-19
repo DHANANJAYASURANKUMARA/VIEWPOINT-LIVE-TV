@@ -93,7 +93,7 @@ export default function MainLayoutWrapper({ children }: { children: React.ReactN
     if (!isMounted) return <div className="fixed inset-0 bg-vpoint-dark" />;
 
     return (
-        <div className={`flex w-full h-screen overflow-hidden vpoint-bg transition-colors duration-700 ${theme === 'magenta' ? 'theme-magenta' : ''}`}>
+        <div className={`flex w-full h-screen overflow-hidden vpoint-bg transition-colors duration-300 ${theme === 'magenta' ? 'theme-magenta' : ''}`}>
             <AnimatePresence>
                 {isSidebarOpen && isMobile && (
                     <motion.div
@@ -115,8 +115,8 @@ export default function MainLayoutWrapper({ children }: { children: React.ReactN
                             opacity: 1
                         }}
                         exit={{ x: "-100%", opacity: 0 }}
-                        transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
-                        className="fixed lg:relative z-[60] h-full"
+                        transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
+                        className="fixed lg:relative z-[60] h-full w-full lg:w-auto"
                     >
                         <Sidebar
                             onClose={() => setIsSidebarOpen(false)}
@@ -133,14 +133,14 @@ export default function MainLayoutWrapper({ children }: { children: React.ReactN
                             initial={{ y: -100, opacity: 0 }}
                             animate={{ y: 0, opacity: 1 }}
                             exit={{ y: -100, opacity: 0 }}
-                            transition={{ duration: 0.5, ease: "easeInOut" }}
+                            transition={{ duration: 0.3, ease: "easeInOut" }}
                         >
                             <TopBar />
                         </motion.div>
                     )}
                 </AnimatePresence>
 
-                <div className={`flex-1 transition-all duration-700 ${isCinemaMode ? "" : "p-0"}`}>
+                <div className={`flex-1 transition-all duration-300 ${isCinemaMode ? "" : "p-0"}`}>
                     {children}
                 </div>
 
