@@ -220,14 +220,14 @@ export default function LandingPage({ onLaunch }: LandingPageProps) {
                         </p>
                     </div>
 
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-5xl mx-auto">
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 max-w-7xl mx-auto">
                         {[
                             { icon: <Sparkles className="mx-auto text-neon-magenta opacity-80" size={32} />, title: "Atmospheric 4K", desc: "250+ Nodes Upgraded to HDR10+" },
                             { icon: <Radio className="mx-auto text-neon-cyan opacity-80" size={32} />, title: "Neural Pulse", desc: "Predictive Buffer Engine Active" },
                             { icon: <Volume2 className="mx-auto text-neon-purple opacity-80" size={32} />, title: "Spatial Shield", desc: "3D Atmospheric Audio Engine" },
                             { icon: <Globe className="mx-auto text-emerald-400 opacity-80" size={32} />, title: "Global Grid", desc: "Ultra-Edge Node Synchronization" }
                         ].map((item, i) => (
-                            <div key={i} className="relative group overflow-hidden rounded-[2rem] aspect-video glass border border-white/10 flex items-center justify-center bg-white/5 transition-all hover:border-white/20">
+                            <div key={i} className="relative group overflow-hidden rounded-[2rem] aspect-square lg:aspect-video glass border border-white/10 flex items-center justify-center bg-white/5 transition-all hover:border-white/20">
                                 <div className="absolute inset-0 bg-gradient-to-t from-vpoint-dark via-transparent to-transparent z-10" />
                                 <div className="text-center z-20 space-y-4 p-6">
                                     {item.icon}
