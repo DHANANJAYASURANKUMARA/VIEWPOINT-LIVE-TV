@@ -38,7 +38,7 @@ export default function LandingPage({ onLaunch }: LandingPageProps) {
     }, []);
 
     const navLinks = [
-        { name: "Transmission", href: "#transmission" },
+        { name: "Home", href: "#hero" },
         { name: "Features", href: "#features" },
         { name: "What's New", href: "#whats-new" },
         { name: "FAQ", href: "#faq" },
@@ -52,9 +52,10 @@ export default function LandingPage({ onLaunch }: LandingPageProps) {
                 <div className="container mx-auto px-6">
                     <div className={`relative glass border border-white/5 rounded-full px-8 py-4 flex items-center justify-between transition-all duration-500 ${scrolled ? "bg-vpoint-dark/80 backdrop-blur-2xl shadow-[0_20px_50px_rgba(0,0,0,0.5)]" : "bg-transparent"}`}>
                         {/* Branding */}
-                        <div className="flex items-center gap-3">
-                            <span className="text-xl font-black text-white tracking-tighter uppercase whitespace-nowrap">VIEWPOINT</span>
-                        </div>
+                        <a href="#hero" className="flex items-center gap-3 group">
+                            <Tv size={24} className="text-neon-cyan group-hover:scale-110 transition-transform" />
+                            <span className="text-xl font-bold text-white tracking-tighter uppercase whitespace-nowrap">VIEWPOINT</span>
+                        </a>
 
                         {/* Desktop Nav */}
                         <div className="hidden lg:flex items-center gap-10">
@@ -118,7 +119,7 @@ export default function LandingPage({ onLaunch }: LandingPageProps) {
             </AnimatePresence>
 
             {/* Hero & Background */}
-            <div className="relative min-h-screen flex items-center justify-center pt-20 overflow-hidden">
+            <div id="hero" className="relative min-h-screen flex items-center justify-center pt-20 overflow-hidden">
                 <div className="absolute inset-0 z-0">
                     <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[100vw] h-[100vw] bg-[radial-gradient(circle_at_50%_50%,_rgba(34,211,238,0.15)_0%,_transparent_70%)] opacity-50" />
                     <div className="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.02)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.02)_1px,transparent_1px)] bg-[size:100px_100px]" />
@@ -286,47 +287,47 @@ export default function LandingPage({ onLaunch }: LandingPageProps) {
             <footer className="py-20 border-t border-white/5">
                 <div className="container mx-auto px-6">
                     <div className="grid grid-cols-1 md:grid-cols-4 gap-12 mb-20">
-                        <div className="space-y-6">
+                        <div className="space-y-10">
                             <div className="flex items-center gap-3">
-                                <Tv size={24} className="text-neon-cyan" />
-                                <span className="text-2xl font-black text-white tracking-tighter uppercase">VIEWPOINT</span>
+                                <Tv size={28} className="text-neon-cyan" />
+                                <span className="text-3xl font-bold text-white tracking-tighter uppercase">VIEWPOINT</span>
                             </div>
-                            <p className="text-[10px] font-bold text-slate-500 leading-loose uppercase tracking-widest">The future of atmospheric live television. Ultra-low latency, global coverage.</p>
-                            <div className="flex items-center gap-4">
-                                <a href="#" className="p-2 glass border border-white/10 rounded-lg hover:text-white transition-all"><Mail size={16} /></a>
-                                <a href="#" className="p-2 glass border border-white/10 rounded-lg hover:text-white transition-all"><ExternalLink size={16} /></a>
+                            <p className="text-xs font-semibold text-white/30 leading-loose uppercase tracking-widest">The future of atmospheric live television. Ultra-low latency, global signal coverage.</p>
+                            <div className="flex items-center gap-5">
+                                <a href="#" className="p-3 glass border border-white/10 rounded-xl hover:text-neon-cyan transition-all bg-white/5"><Mail size={18} /></a>
+                                <a href="#" className="p-3 glass border border-white/10 rounded-xl hover:text-neon-cyan transition-all bg-white/5"><ExternalLink size={18} /></a>
                             </div>
                         </div>
 
-                        <div className="space-y-6">
-                            <h4 className="text-[11px] font-black text-white uppercase tracking-[0.3em]">Network</h4>
-                            <ul className="space-y-4">
-                                <li><a href="#" className="text-[10px] font-bold text-slate-500 hover:text-white uppercase tracking-widest">Status HUD</a></li>
-                                <li><a href="#" className="text-[10px] font-bold text-slate-500 hover:text-white uppercase tracking-widest">CDNs Active</a></li>
-                                <li><a href="#" className="text-[10px] font-bold text-slate-500 hover:text-white uppercase tracking-widest">Signal Stats</a></li>
+                        <div className="space-y-8">
+                            <h4 className="text-xs font-bold text-white uppercase tracking-[0.4em]">Network</h4>
+                            <ul className="space-y-5">
+                                <li><a href="#" className="text-xs font-semibold text-white/30 hover:text-white uppercase tracking-widest transition-colors">Signal HUD</a></li>
+                                <li><a href="#" className="text-xs font-semibold text-white/30 hover:text-white uppercase tracking-widest transition-colors">Edge Nodes</a></li>
+                                <li><a href="#" className="text-xs font-semibold text-white/30 hover:text-white uppercase tracking-widest transition-colors">Latency Stats</a></li>
                             </ul>
                         </div>
 
-                        <div className="space-y-6">
-                            <h4 className="text-[11px] font-black text-white uppercase tracking-[0.3em]">Governance</h4>
-                            <ul className="space-y-4">
-                                <li><a href="#" className="text-[10px] font-bold text-slate-500 hover:text-white uppercase tracking-widest">Terms of Entry</a></li>
-                                <li><a href="#" className="text-[10px] font-bold text-slate-500 hover:text-white uppercase tracking-widest">Privacy Matrix</a></li>
-                                <li><a href="#" className="text-[10px] font-bold text-slate-500 hover:text-white uppercase tracking-widest">DMCA Protocol</a></li>
-                                <li><a href="#" className="text-[10px] font-bold text-slate-500 hover:text-white uppercase tracking-widest">Disclaimer</a></li>
+                        <div className="space-y-8">
+                            <h4 className="text-xs font-bold text-white uppercase tracking-[0.4em]">Protocol</h4>
+                            <ul className="space-y-5">
+                                <li><a href="#" className="text-xs font-semibold text-white/30 hover:text-white uppercase tracking-widest transition-colors">Entry Terms</a></li>
+                                <li><a href="#" className="text-xs font-semibold text-white/30 hover:text-white uppercase tracking-widest transition-colors">Privacy Shield</a></li>
+                                <li><a href="#" className="text-xs font-semibold text-white/30 hover:text-white uppercase tracking-widest transition-colors">DMCA Request</a></li>
+                                <li><a href="#" className="text-xs font-semibold text-white/30 hover:text-white uppercase tracking-widest transition-colors">Legal Disclaimer</a></li>
                             </ul>
                         </div>
 
-                        <div className="space-y-6">
-                            <h4 className="text-[11px] font-black text-white uppercase tracking-[0.3em]">Transmission</h4>
-                            <div className="p-6 glass border border-white/10 rounded-3xl space-y-4">
-                                <h5 className="text-[9px] font-black text-neon-cyan uppercase">Join the Pulse</h5>
+                        <div className="space-y-8">
+                            <h4 className="text-xs font-bold text-white uppercase tracking-[0.4em]">Handshake</h4>
+                            <div className="p-8 glass border border-white/10 rounded-[2rem] space-y-6 bg-white/5">
+                                <h5 className="text-[10px] font-bold text-neon-cyan uppercase tracking-[0.2em]">Join the Transmission</h5>
                                 <input
                                     type="email"
                                     placeholder="Neural ID"
-                                    className="w-full bg-white/5 border border-white/5 rounded-full px-4 py-2 text-[10px] font-bold text-white uppercase tracking-widest focus:outline-none focus:border-neon-cyan/50"
+                                    className="w-full bg-vpoint-dark/50 border border-white/5 rounded-full px-6 py-3 text-xs font-bold text-white uppercase tracking-widest focus:outline-none focus:border-neon-cyan/30"
                                 />
-                                <button className="w-full py-2 bg-white text-vpoint-dark rounded-full text-[9px] font-black uppercase tracking-widest hover:bg-neon-cyan transition-all">Subscribe</button>
+                                <button className="w-full py-3 bg-white text-vpoint-dark rounded-full text-xs font-bold uppercase tracking-widest hover:bg-neon-cyan transition-all">Subscribe</button>
                             </div>
                         </div>
                     </div>
