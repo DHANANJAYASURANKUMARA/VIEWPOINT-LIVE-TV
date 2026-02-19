@@ -1,7 +1,7 @@
 "use server";
 
 import { db } from "./db";
-import { channels, favorites, settings } from "./schema";
+import { channels, favorites, settings, operators } from "./schema";
 import { eq, and } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 
@@ -87,25 +87,101 @@ export async function updateSetting(key: string, value: string, userId: string =
     }
 }
 
+export async function getOperators() {
+    try {
+        return await db.select().from(operators).orderBy(operators.name);
+    } catch (error) {
+        console.error("Failed to fetch operators:", error);
+        return [];
+    }
+}
+
+export async function manageOperator(data: any) {
+    try {
+        if (data.id) {
+            await db.update(operators).set(data).where(eq(operators.id, data.id));
+        } else {
+            await db.insert(operators).values(data);
+        }
+        revalidatePath("/admin/operators");
+        return { success: true };
+    } catch (error) {
+        console.error("Failed to manage operator:", error);
+        return { success: false };
+    }
+}
+
+export async function deleteOperator(id: string) {
+    try {
+        await db.delete(operators).where(eq(operators.id, id));
+        revalidatePath("/admin/operators");
+        return { success: true };
+    } catch (error) {
+        console.error("Failed to delete operator:", error);
+        return { success: false };
+    }
+}
+
+export async function updateChannel(id: string, data: any) {
+    try {
+        await db.update(channels).set(data).where(eq(channels.id, id));
+        revalidatePath("/admin/signals");
+        revalidatePath("/");
+        return { success: true };
+    } catch (error) {
+        console.error("Failed to update channel:", error);
+        return { success: false };
+    }
+}
+
+export async function deleteChannel(id: string) {
+    try {
+        await db.delete(channels).where(eq(channels.id, id));
+        revalidatePath("/admin/signals");
+        revalidatePath("/");
+        return { success: true };
+    } catch (error) {
+        console.error("Failed to delete channel:", error);
+        return { success: false };
+    }
+}
+
+export async function addChannel(data: any) {
+    try {
+        await db.insert(channels).values(data);
+        revalidatePath("/admin/signals");
+        revalidatePath("/");
+        return { success: true };
+    } catch (error) {
+        console.error("Failed to add channel:", error);
+        return { success: false };
+    }
+}
+
 export async function seedChannels(initialChannels: any[]) {
     try {
+        let count = 0;
         for (const channel of initialChannels) {
             const existing = await db.select().from(channels).where(eq(channels.id, channel.id));
             if (existing.length === 0) {
                 await db.insert(channels).values({
-                    id: channel.id,
+                    id: channel.id.toString(),
                     name: channel.name,
                     url: channel.url,
                     category: channel.category,
-                    logo: channel.logo,
-                    viewers: channel.viewers,
-                    trending: channel.trending,
+                    logo: channel.logo || "📡",
+                    viewers: channel.viewers || "0",
+                    trending: channel.trending || false,
+                    status: "Live"
                 });
+                count++;
             }
         }
-        return { success: true };
+        revalidatePath("/admin/signals");
+        revalidatePath("/");
+        return { success: true, count };
     } catch (error) {
         console.error("Failed to seed channels:", error);
-        return { success: false };
+        return { success: false, count: 0 };
     }
 }

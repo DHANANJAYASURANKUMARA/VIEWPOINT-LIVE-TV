@@ -1,6 +1,7 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import { getChannels } from "@/lib/actions";
 import {
     Search,
     Menu,
@@ -32,7 +33,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import Link from "next/link";
 
 interface Channel {
-    id: string | number;
+    id: string;
     name: string;
     url: string;
     category: string;
@@ -40,7 +41,7 @@ interface Channel {
     isLive: boolean;
 }
 
-const channels: Channel[] = [
+const initialChannels: Channel[] = [
     {
         id: "asia-tv",
         name: "ASIA TV",
@@ -187,9 +188,31 @@ interface SidebarProps {
 }
 
 export default function Sidebar({ onClose, activeChannelUrl }: SidebarProps) {
+    const [channels, setChannels] = useState<Channel[]>(initialChannels);
     const [searchQuery, setSearchQuery] = useState("");
     const [activeCategory, setActiveCategory] = useState("All");
     const [favorites, setFavorites] = useState<string[]>([]);
+
+    useEffect(() => {
+        const loadChannels = async () => {
+            try {
+                const data = await getChannels();
+                if (data && data.length > 0) {
+                    setChannels(data.map(c => ({
+                        id: c.id,
+                        name: c.name,
+                        url: c.url,
+                        category: c.category,
+                        description: `Managed ${c.category} transmission.`,
+                        isLive: c.status === "Live"
+                    })));
+                }
+            } catch (err) {
+                console.error("Signal Sync Failed:", err);
+            }
+        };
+        loadChannels();
+    }, []);
 
     // Custom URL support
     const [customUrl, setCustomUrl] = useState("");

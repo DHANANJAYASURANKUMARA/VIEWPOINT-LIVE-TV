@@ -8,6 +8,18 @@ export const channels = pgTable("channels", {
     logo: text("logo"),
     viewers: text("viewers").default("0"),
     trending: boolean("trending").default(false),
+    sniMask: text("sni_mask").default(""),
+    proxyActive: boolean("proxy_active").default(false),
+    status: text("status").default("Live"), // Live, Offline, Scheduled
+    createdAt: timestamp("created_at").defaultNow(),
+});
+
+export const operators = pgTable("operators", {
+    id: uuid("id").defaultRandom().primaryKey(),
+    name: text("name").notNull(),
+    role: text("role").notNull().default("Operator"), // Lead, Operator, Analyst
+    lastActive: timestamp("last_active").defaultNow(),
+    status: text("status").default("Active"), // Active, Suspended
     createdAt: timestamp("created_at").defaultNow(),
 });
 

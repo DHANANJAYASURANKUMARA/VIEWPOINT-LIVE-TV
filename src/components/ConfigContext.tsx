@@ -13,6 +13,8 @@ interface PlatformConfig {
     showAbout: boolean;
     showContact: boolean;
     neuralHudEnabled: boolean;
+    maintenanceMode: boolean;
+    adSenseActive: boolean;
     version: string;
 }
 
@@ -27,6 +29,8 @@ const defaultConfig: PlatformConfig = {
     showAbout: true,
     showContact: true,
     neuralHudEnabled: true,
+    maintenanceMode: false,
+    adSenseActive: true,
     version: "2.0.4",
 };
 

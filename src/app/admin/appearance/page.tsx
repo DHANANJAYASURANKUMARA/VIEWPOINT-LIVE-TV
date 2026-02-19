@@ -10,7 +10,9 @@ import {
     RefreshCcw,
     Monitor,
     Type,
-    Check
+    Check,
+    Shield,
+    Activity
 } from "lucide-react";
 import { motion } from "framer-motion";
 import { useConfig } from "../../../components/ConfigContext";
@@ -34,6 +36,8 @@ export default function AppearancePage() {
         { id: "showFeatures", label: "Tech Features", icon: Zap },
         { id: "showWhatsNew", label: "Sector Sitemap", icon: Layout },
         { id: "showFAQ", label: "Knowledge Base", icon: Type },
+        { id: "maintenanceMode", label: "Maintenance Protocol", icon: Shield },
+        { id: "adSenseActive", label: "Neural AdSense", icon: Activity },
     ];
 
     return (
@@ -67,8 +71,8 @@ export default function AppearancePage() {
                                     key={color.value}
                                     onClick={() => updateConfig({ accentColor: color.value })}
                                     className={`aspect-square rounded-2xl transition-all relative overflow-hidden group shadow-2xl ${config.accentColor === color.value
-                                            ? "ring-4 ring-white/20 scale-105"
-                                            : "hover:scale-105"
+                                        ? "ring-4 ring-white/20 scale-105"
+                                        : "hover:scale-105"
                                         }`}
                                     style={{ backgroundColor: color.value }}
                                 >
@@ -111,8 +115,8 @@ export default function AppearancePage() {
                                 key={section.id}
                                 onClick={() => updateConfig({ [section.id]: !config[section.id as keyof typeof config] })}
                                 className={`w-full flex items-center justify-between p-6 rounded-3xl transition-all group ${config[section.id as keyof typeof config]
-                                        ? "bg-white/10 border border-white/10"
-                                        : "bg-black/20 border border-transparent opacity-40 hover:opacity-60"
+                                    ? "bg-white/10 border border-white/10"
+                                    : "bg-black/20 border border-transparent opacity-40 hover:opacity-60"
                                     }`}
                             >
                                 <div className="flex items-center gap-6">
