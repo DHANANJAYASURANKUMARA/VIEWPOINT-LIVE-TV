@@ -173,7 +173,7 @@ export default function LandingPage({ onLaunch }: LandingPageProps) {
             </div>
 
             {/* Features HUD */}
-            <section id="features" className="py-32 container mx-auto px-6">
+            <section id="features" className="min-h-screen flex items-center justify-center py-32 container mx-auto px-6">
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
                     {[
                         { icon: <Zap />, title: "300ms Pulse", desc: "Instantaneous signal lock for a lag-free experience across all global channels." },
