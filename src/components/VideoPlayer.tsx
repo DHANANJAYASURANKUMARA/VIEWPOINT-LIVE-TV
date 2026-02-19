@@ -378,54 +378,54 @@ export default function VideoPlayer({ url, title = "Live Stream" }: VideoPlayerP
                             </div>
 
                             {showTechStats && (
-                                <div className="glass-dark border border-white/10 rounded-2xl p-4 backdrop-blur-3xl space-y-3 min-w-[180px] pointer-events-auto">
-                                    <div className="flex items-center justify-between">
-                                        <span className="text-[8px] font-black text-slate-500 uppercase tracking-widest">Bitrate</span>
-                                        <span className="text-[10px] font-black text-neon-cyan">{techStats.bitrate} KB/S</span>
+                                <div className="glass-dark border border-white/10 rounded-2xl p-3 lg:p-4 backdrop-blur-3xl space-y-2 lg:space-y-3 min-w-[140px] lg:min-w-[180px] pointer-events-auto">
+                                    <div className="flex items-center justify-between gap-4">
+                                        <span className="text-[7px] lg:text-[8px] font-black text-slate-500 uppercase tracking-widest">Bitrate</span>
+                                        <span className="text-[9px] lg:text-[10px] font-black text-neon-cyan">{techStats.bitrate} KB/S</span>
                                     </div>
-                                    <div className="flex items-center justify-between">
-                                        <span className="text-[8px] font-black text-slate-500 uppercase tracking-widest">Buffer</span>
-                                        <span className="text-[10px] font-black text-neon-magenta">{techStats.buffer}S</span>
+                                    <div className="flex items-center justify-between gap-4">
+                                        <span className="text-[7px] lg:text-[8px] font-black text-slate-500 uppercase tracking-widest">Buffer</span>
+                                        <span className="text-[9px] lg:text-[10px] font-black text-neon-magenta">{techStats.buffer}S</span>
                                     </div>
-                                    <div className="flex items-center justify-between">
-                                        <span className="text-[8px] font-black text-slate-500 uppercase tracking-widest">Latency</span>
-                                        <span className="text-[10px] font-black text-emerald-500">{techStats.latency}S</span>
+                                    <div className="flex items-center justify-between gap-4 text-emerald-500">
+                                        <span className="text-[7px] lg:text-[8px] font-black opacity-60 uppercase tracking-widest">Latency</span>
+                                        <span className="text-[9px] lg:text-[10px] font-black">{techStats.latency}S</span>
                                     </div>
-                                    <div className="h-[1px] bg-white/5 w-full" />
-                                    <div className="flex items-center gap-2 text-[7px] font-black text-slate-600 uppercase tracking-tighter">
+                                    <div className="h-[px] bg-white/5 w-full hidden lg:block" />
+                                    <div className="hidden lg:flex items-center gap-2 text-[7px] font-black text-slate-600 uppercase tracking-tighter">
                                         <Zap size={8} className="text-neon-cyan" />
-                                        <span>Engine: {isDirectStream ? 'SHAKA' : (url.includes('youtube.com') ? 'YOUTUBE' : 'SYSTEM')} VIEWPOINT MODULE v2.0.4</span>
+                                        <span>Engine: {isDirectStream ? 'SHAKA' : (url.includes('youtube.com') ? 'YOUTUBE' : 'SYSTEM')} v2.0.4</span>
                                     </div>
                                 </div>
                             )}
 
                             {!useReactPlayer && (
-                                <div className="px-4 py-2 bg-emerald-500/10 border border-emerald-500/20 rounded-xl flex items-center gap-2 backdrop-blur-3xl pointer-events-auto">
-                                    <ShieldCheck className="text-emerald-500" size={14} />
-                                    <span className="text-[8px] font-black text-emerald-500 uppercase tracking-widest">Signal Verified • Use Provider Controls</span>
+                                <div className="px-3 lg:px-4 py-1.5 lg:py-2 bg-emerald-500/10 border border-emerald-500/20 rounded-xl flex items-center gap-2 backdrop-blur-3xl pointer-events-auto">
+                                    <ShieldCheck className="text-emerald-500" size={12} />
+                                    <span className="text-[7px] lg:text-[8px] font-black text-emerald-500 uppercase tracking-widest">Signal Verified</span>
                                 </div>
                             )}
                         </div>
 
                         {/* Control Interface (Bottom - Glass Floating) */}
-                        <div className="absolute bottom-10 left-10 right-10 flex items-center justify-center pointer-events-auto">
+                        <div className="absolute bottom-6 lg:bottom-10 left-4 lg:left-10 right-4 lg:right-10 flex items-center justify-center pointer-events-auto">
                             {useReactPlayer && (
-                                <div className="glass-dark border border-white/10 rounded-[3rem] p-3 pl-3 pr-8 flex items-center gap-6 shadow-[0_30px_60px_rgba(0,0,0,0.8)]">
+                                <div className="glass-dark border border-white/10 rounded-2xl lg:rounded-[3rem] p-2 lg:p-3 pr-4 lg:pr-8 flex items-center gap-3 lg:gap-6 shadow-[0_30px_60px_rgba(0,0,0,0.8)] max-w-full overflow-hidden">
                                     <button
                                         onClick={() => setPlaying(!playing)}
-                                        className="w-14 h-14 rounded-full bg-white flex items-center justify-center text-black hover:bg-neon-cyan hover:shadow-[0_0_30px_rgba(34,211,238,0.5)] transition-all duration-500 transform active:scale-90"
+                                        className="w-10 h-10 lg:w-14 lg:h-14 rounded-full bg-white flex items-center justify-center text-black hover:bg-neon-cyan hover:shadow-[0_0_30px_rgba(34,211,238,0.5)] transition-all duration-500 transform active:scale-90 flex-shrink-0"
                                     >
-                                        {playing ? <Pause fill="currentColor" size={24} /> : <Play fill="currentColor" size={24} className="ml-1" />}
+                                        {playing ? <Pause fill="currentColor" size={20} className="lg:w-6 lg:h-6" /> : <Play fill="currentColor" size={20} className="lg:w-6 lg:h-6 ml-1" />}
                                     </button>
 
-                                    <div className="h-8 w-[1px] bg-white/10" />
+                                    <div className="h-6 lg:h-8 w-[1px] bg-white/10 flex-shrink-0" />
 
-                                    <div className="flex items-center gap-4 group/vol">
+                                    <div className="flex items-center gap-2 lg:gap-4 group/vol">
                                         <button
                                             onClick={() => setMuted(!muted)}
-                                            className="text-white/40 hover:text-white transition-colors"
+                                            className="text-white/40 hover:text-white transition-colors flex-shrink-0"
                                         >
-                                            {muted || volume === 0 ? <VolumeX size={20} /> : <Volume2 size={20} />}
+                                            {muted || volume === 0 ? <VolumeX size={18} className="lg:w-5 lg:h-5" /> : <Volume2 size={18} className="lg:w-5 lg:h-5" />}
                                         </button>
                                         <input
                                             type="range"
@@ -437,21 +437,21 @@ export default function VideoPlayer({ url, title = "Live Stream" }: VideoPlayerP
                                                 setVolume(parseFloat(e.target.value));
                                                 if (muted) setMuted(false);
                                             }}
-                                            className="w-24 h-1 bg-white/5 rounded-lg appearance-none cursor-pointer accent-neon-cyan hover:bg-white/10 transition-all font-medium"
+                                            className="w-16 lg:w-24 h-1 bg-white/5 rounded-lg appearance-none cursor-pointer accent-neon-cyan hover:bg-white/10 transition-all font-medium"
                                         />
                                     </div>
 
-                                    <div className="h-8 w-[1px] bg-white/10" />
+                                    <div className="h-6 lg:h-8 w-[1px] bg-white/10 hidden sm:block flex-shrink-0" />
 
-                                    <div className="flex items-center gap-6">
+                                    <div className="flex items-center gap-3 lg:gap-6">
                                         <div className="relative">
                                             <button
                                                 onClick={() => setShowQualityMenu(!showQualityMenu)}
                                                 className={`flex items-center gap-1.5 transition-colors ${showQualityMenu ? "text-neon-cyan" : "text-white/40 hover:text-white"}`}
                                                 title="QUALITY"
                                             >
-                                                <Layers size={20} />
-                                                <span className="text-[8px] font-black uppercase">{currentQuality === -1 ? 'Auto' : `${qualityLevels[currentQuality]?.height}p`}</span>
+                                                <Layers size={18} className="lg:w-5 lg:h-5" />
+                                                <span className="text-[7px] lg:text-[8px] font-black uppercase whitespace-nowrap">{currentQuality === -1 ? 'Auto' : `${qualityLevels[currentQuality]?.height || 'HD'}P`}</span>
                                             </button>
 
                                             <AnimatePresence>

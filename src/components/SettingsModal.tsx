@@ -49,6 +49,14 @@ interface SettingsModalProps {
 export default function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
     const [settings, setSettings] = useState<Settings>(defaultSettings);
     const [isResetting, setIsResetting] = useState(false);
+    const [isMobile, setIsMobile] = useState(false);
+
+    useEffect(() => {
+        const handleResize = () => setIsMobile(window.innerWidth < 1024);
+        handleResize();
+        window.addEventListener('resize', handleResize);
+        return () => window.removeEventListener('resize', handleResize);
+    }, []);
 
     useEffect(() => {
         if (!isOpen) return;
@@ -98,50 +106,50 @@ export default function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
                         initial={{ opacity: 0, scale: 0.95, y: 20 }}
                         animate={{ opacity: 1, scale: 1, y: 0 }}
                         exit={{ opacity: 0, scale: 0.95, y: 20 }}
-                        className="relative w-full max-w-2xl bg-vpoint-dark border border-white/10 rounded-[2.5rem] shadow-[0_0_100px_rgba(34,211,238,0.1)] overflow-hidden"
+                        className="relative w-full max-w-2xl bg-vpoint-dark border border-white/10 rounded-2xl lg:rounded-[2.5rem] shadow-[0_0_100px_rgba(34,211,238,0.1)] overflow-hidden"
                     >
                         {/* Header */}
-                        <div className="p-8 border-b border-white/5 flex items-center justify-between">
-                            <div className="flex items-center gap-4">
-                                <div className="p-3 bg-neon-cyan/10 rounded-2xl border border-neon-cyan/20 text-neon-cyan">
-                                    <Settings2 size={24} />
+                        <div className="p-6 lg:p-8 border-b border-white/5 flex items-center justify-between">
+                            <div className="flex items-center gap-3 lg:gap-4">
+                                <div className="p-2 lg:p-3 bg-neon-cyan/10 rounded-xl lg:rounded-2xl border border-neon-cyan/20 text-neon-cyan">
+                                    <Settings2 size={20} className="lg:w-6 lg:h-6" />
                                 </div>
                                 <div>
-                                    <h2 className="text-xl font-black text-white tracking-widest uppercase mb-0.5">Advanced Settings</h2>
-                                    <p className="text-slate-500 text-[10px] font-bold tracking-[0.2em] uppercase">Neural Configuration Interface</p>
+                                    <h2 className="text-sm lg:text-xl font-black text-white tracking-widest uppercase mb-0.5">Advanced Settings</h2>
+                                    <p className="text-slate-500 text-[8px] lg:text-[10px] font-bold tracking-[0.2em] uppercase">Neural Interface v2.0.4</p>
                                 </div>
                             </div>
                             <button
                                 onClick={onClose}
-                                className="p-3 text-slate-500 hover:text-white hover:bg-white/5 rounded-2xl transition-all"
+                                className="p-2 lg:p-3 text-slate-600 hover:text-white hover:bg-white/5 rounded-xl lg:rounded-2xl transition-all"
                             >
                                 <X size={20} />
                             </button>
                         </div>
 
                         {/* Content */}
-                        <div className="p-8 space-y-10 max-h-[60vh] overflow-y-auto custom-scrollbar">
+                        <div className="p-6 lg:p-8 space-y-8 lg:space-y-10 max-h-[70vh] lg:max-h-[60vh] overflow-y-auto custom-scrollbar">
 
                             {/* Transmission Tuning */}
-                            <section className="space-y-6">
+                            <section className="space-y-4 lg:space-y-6">
                                 <div className="flex items-center gap-3 text-neon-cyan">
-                                    <Activity size={16} />
-                                    <h3 className="text-[11px] font-black tracking-[0.2em] uppercase">Transmission Tuning</h3>
+                                    <Activity size={14} className="lg:w-4 lg:h-4" />
+                                    <h3 className="text-[9px] lg:text-[11px] font-black tracking-[0.2em] uppercase">Transmission Tuning</h3>
                                 </div>
 
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                    <div className="p-5 bg-white/5 border border-white/5 rounded-3xl space-y-4">
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-3 lg:gap-4">
+                                    <div className="p-4 lg:p-5 bg-white/[0.03] border border-white/5 rounded-2xl lg:rounded-3xl space-y-3 lg:space-y-4">
                                         <div className="flex items-center justify-between">
                                             <div className="flex items-center gap-3">
-                                                <Zap size={16} className="text-amber-500" />
-                                                <span className="text-[10px] font-black text-white uppercase tracking-widest">Low Latency Mode</span>
+                                                <Zap size={14} className="text-amber-500 lg:w-4 lg:h-4" />
+                                                <span className="text-[9px] lg:text-[10px] font-black text-white uppercase tracking-widest">Low Latency Mode</span>
                                             </div>
                                             <button
                                                 onClick={() => updateSetting('lowLatency', !settings.lowLatency)}
-                                                className={`w-10 h-5 rounded-full relative transition-all duration-300 ${settings.lowLatency ? 'bg-neon-cyan' : 'bg-slate-800'}`}
+                                                className={`w-9 lg:w-10 h-4.5 lg:h-5 rounded-full relative transition-all duration-300 ${settings.lowLatency ? 'bg-neon-cyan' : 'bg-slate-800'}`}
                                             >
                                                 <motion.div
-                                                    animate={{ x: settings.lowLatency ? 22 : 4 }}
+                                                    animate={{ x: settings.lowLatency ? (isMobile ? 18 : 22) : 4 }}
                                                     className="w-3.5 h-3.5 bg-white rounded-full absolute top-0.5"
                                                 />
                                             </button>
@@ -287,27 +295,27 @@ export default function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
                             </section>
 
                             {/* Memory Core */}
-                            <section className="space-y-6">
+                            <section className="space-y-4 lg:space-y-6">
                                 <div className="flex items-center gap-3 text-red-500">
-                                    <Database size={16} />
-                                    <h3 className="text-[11px] font-black tracking-[0.2em] uppercase">Memory Core</h3>
+                                    <Database size={14} className="lg:w-4 lg:h-4" />
+                                    <h3 className="text-[9px] lg:text-[11px] font-black tracking-[0.2em] uppercase">Memory Core</h3>
                                 </div>
 
                                 <div className="flex gap-4">
                                     <button
                                         onClick={handleClearData}
                                         disabled={isResetting}
-                                        className="flex-1 p-5 bg-red-500/10 border border-red-500/20 rounded-3xl text-red-500 hover:bg-red-500/20 transition-all flex items-center justify-center gap-3 group disabled:opacity-50"
+                                        className="flex-1 p-4 lg:p-5 bg-red-500/10 border border-red-500/20 rounded-2xl lg:rounded-3xl text-red-500 hover:bg-red-500/20 transition-all flex items-center justify-center gap-3 group disabled:opacity-50"
                                     >
                                         {isResetting ? (
                                             <>
-                                                <RefreshCcw size={18} className="animate-spin" />
-                                                <span className="text-[10px] font-black uppercase tracking-widest">Purging Memory...</span>
+                                                <RefreshCcw size={16} className="animate-spin" />
+                                                <span className="text-[9px] lg:text-[10px] font-black uppercase tracking-widest">Purging Memory...</span>
                                             </>
                                         ) : (
                                             <>
-                                                <Trash2 size={18} className="group-hover:scale-110 transition-transform" />
-                                                <span className="text-[10px] font-black uppercase tracking-widest">Reset All App Data</span>
+                                                <Trash2 size={16} className="group-hover:scale-110 transition-transform" />
+                                                <span className="text-[9px] lg:text-[10px] font-black uppercase tracking-widest">Reset All App Data</span>
                                             </>
                                         )}
                                     </button>

@@ -196,7 +196,7 @@ export default function ChannelGrid({ onChannelSelect }: ChannelGridProps) {
                 </div>
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
+            <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-4 lg:gap-8">
                 {filteredChannels.map((channel, index) => (
                     <motion.button
                         key={channel.id}
@@ -204,7 +204,7 @@ export default function ChannelGrid({ onChannelSelect }: ChannelGridProps) {
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ delay: index * 0.05 }}
                         onClick={() => onChannelSelect(channel.url, channel.name)}
-                        className="group relative h-48 rounded-2xl overflow-hidden glass hover:border-neon-cyan/50 transition-all duration-300 text-left"
+                        className="group relative h-40 lg:h-48 rounded-2xl overflow-hidden glass hover:border-neon-cyan/50 transition-all duration-300 text-left"
                     >
                         <div className="absolute inset-0 bg-gradient-to-t from-vpoint-dark via-vpoint-dark/20 to-transparent z-10 opacity-60 group-hover:opacity-80 transition-opacity" />
 
@@ -221,30 +221,30 @@ export default function ChannelGrid({ onChannelSelect }: ChannelGridProps) {
                             />
                         </div>
 
-                        <div className="absolute top-4 right-4 z-20">
+                        <div className="absolute top-3 right-3 lg:top-4 lg:right-4 z-20">
                             {channel.trending && (
                                 <div className="flex items-center gap-1.5 px-2 py-1 bg-neon-purple/20 border border-neon-purple/30 rounded-full">
-                                    <span className="relative flex h-2 w-2">
+                                    <span className="relative flex h-1.5 w-1.5 lg:h-2 lg:w-2">
                                         <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-neon-purple opacity-75"></span>
-                                        <span className="relative inline-flex rounded-full h-2 w-2 bg-neon-purple"></span>
+                                        <span className="relative inline-flex rounded-full h-1.5 w-1.5 lg:h-2 lg:w-2 bg-neon-purple"></span>
                                     </span>
-                                    <span className="text-[9px] font-bold text-neon-purple uppercase tracking-tight">Trending</span>
+                                    <span className="text-[7px] lg:text-[9px] font-bold text-neon-purple uppercase tracking-tight">Trending</span>
                                 </div>
                             )}
                         </div>
 
                         <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity z-20">
-                            <div className="w-12 h-12 rounded-full bg-neon-cyan text-vpoint-dark flex items-center justify-center shadow-xl shadow-neon-cyan/30 transform scale-75 group-hover:scale-100 transition-transform">
-                                <Play fill="currentColor" className="ml-1" size={20} />
+                            <div className="w-10 h-10 lg:w-12 lg:h-12 rounded-full bg-neon-cyan text-vpoint-dark flex items-center justify-center shadow-xl shadow-neon-cyan/30 transform scale-75 group-hover:scale-100 transition-transform">
+                                <Play fill="currentColor" className="ml-1" size={18} />
                             </div>
                         </div>
 
-                        <div className="absolute bottom-0 left-0 right-0 p-5 z-20">
-                            <div className="text-3xl mb-1 group-hover:scale-110 transition-transform origin-left duration-500">{channel.logo}</div>
-                            <p className="text-[8px] font-black text-neon-cyan uppercase tracking-widest mb-1">{channel.category}</p>
-                            <h4 className="text-white font-black truncate leading-tight uppercase tracking-wide group-hover:text-neon-cyan transition-colors">{channel.name}</h4>
-                            <p className="text-slate-400 text-[8px] mt-1.5 flex items-center gap-1.5 uppercase font-black tracking-widest">
-                                <span className={`w-1.5 h-1.5 rounded-full ${channel.id === 'apple-event' ? 'bg-amber-500' : 'bg-emerald-500 animate-pulse'}`} />
+                        <div className="absolute bottom-0 left-0 right-0 p-4 lg:p-5 z-20">
+                            <div className="text-2xl lg:text-3xl mb-1 group-hover:scale-110 transition-transform origin-left duration-500">{channel.logo}</div>
+                            <p className="text-[7px] lg:text-[8px] font-black text-neon-cyan uppercase tracking-widest mb-1">{channel.category}</p>
+                            <h4 className="text-xs lg:text-sm font-black truncate leading-tight uppercase tracking-wide group-hover:text-neon-cyan transition-colors">{channel.name}</h4>
+                            <p className="text-slate-400 text-[7px] lg:text-[8px] mt-1 lg:mt-1.5 flex items-center gap-1.5 uppercase font-black tracking-widest">
+                                <span className={`w-1 h-1 lg:w-1.5 lg:h-1.5 rounded-full ${channel.id === 'apple-event' ? 'bg-amber-500' : 'bg-emerald-500 animate-pulse'}`} />
                                 {channel.viewers} Viewers
                             </p>
                         </div>

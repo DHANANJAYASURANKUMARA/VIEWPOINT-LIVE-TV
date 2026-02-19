@@ -13,6 +13,7 @@ export default function MainLayoutWrapper({ children }: { children: React.ReactN
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
     const [theme, setTheme] = useState('cyan');
     const [isMobile, setIsMobile] = useState(false);
+    const [isMounted, setIsMounted] = useState(false);
 
     // Handlers for custom events
     const handleCinemaToggle = useCallback((e: any) => {
@@ -43,10 +44,14 @@ export default function MainLayoutWrapper({ children }: { children: React.ReactN
         }
     }, []);
 
-    // Effect for window resize
+    // Effect for window resize and initial mount
     useEffect(() => {
+        setIsMounted(true);
         const handleResize = () => {
-            setIsMobile(window.innerWidth < 1024);
+            const mobile = window.innerWidth < 1024;
+            setIsMobile(mobile);
+            // Auto-close sidebar on mobile/tablet during resize if it was open
+            if (mobile) setIsSidebarOpen(false);
         };
         handleResize();
         window.addEventListener("resize", handleResize);
@@ -64,10 +69,12 @@ export default function MainLayoutWrapper({ children }: { children: React.ReactN
                 }
             } catch { /* ignore parse error */ }
         }
-    }, []);
+    }, [isMounted]);
 
     // Effect for event listeners
     useEffect(() => {
+        if (!isMounted) return;
+
         window.addEventListener("vpoint-cinema-toggle", handleCinemaToggle as EventListener);
         window.addEventListener("vpoint-settings-change", handleSettingsChange as EventListener);
         window.addEventListener("vpoint-open-settings", handleOpenSettings as EventListener);
@@ -81,23 +88,25 @@ export default function MainLayoutWrapper({ children }: { children: React.ReactN
             window.removeEventListener("vpoint-sidebar-toggle", handleSidebarToggle as EventListener);
             window.removeEventListener("vpoint-channel-select", handleChannelSelectSync as EventListener);
         };
-    }, [handleCinemaToggle, handleSettingsChange, handleOpenSettings, handleSidebarToggle, handleChannelSelectSync]);
+    }, [isMounted, handleCinemaToggle, handleSettingsChange, handleOpenSettings, handleSidebarToggle, handleChannelSelectSync]);
+
+    if (!isMounted) return <div className="fixed inset-0 bg-vpoint-dark" />;
 
     return (
-        <div className={`flex w-full h-screen overflow-hidden vpoint-bg transition-colors duration-1000 ${theme === 'magenta' ? 'theme-magenta' : ''}`}>
-            <AnimatePresence mode="wait">
+        <div className={`flex w-full h-screen overflow-hidden vpoint-bg transition-colors duration-700 ${theme === 'magenta' ? 'theme-magenta' : ''}`}>
+            <AnimatePresence>
                 {isSidebarOpen && isMobile && (
                     <motion.div
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
                         exit={{ opacity: 0 }}
                         onClick={() => setIsSidebarOpen(false)}
-                        className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[55] lg:hidden"
+                        className="fixed inset-0 bg-black/80 backdrop-blur-md z-[55] lg:hidden"
                     />
                 )}
             </AnimatePresence>
 
-            <AnimatePresence mode="wait">
+            <AnimatePresence>
                 {(!isCinemaMode) && (
                     <motion.div
                         initial={{ x: "-100%", opacity: 0 }}
@@ -106,7 +115,7 @@ export default function MainLayoutWrapper({ children }: { children: React.ReactN
                             opacity: 1
                         }}
                         exit={{ x: "-100%", opacity: 0 }}
-                        transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
+                        transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
                         className="fixed lg:relative z-[60] h-full"
                     >
                         <Sidebar
