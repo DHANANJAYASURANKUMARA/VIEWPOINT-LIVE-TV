@@ -6,7 +6,7 @@ import {
     Tv, Zap, Globe, ShieldCheck, Play, ArrowRight,
     Activity, Layers, Users, Radio, Info, FileText,
     Mail, ExternalLink, Menu, X, ArrowUpRight,
-    Sparkles, Shield, Cpu
+    Sparkles, Shield, Cpu, Volume2
 } from "lucide-react";
 
 interface LandingPageProps {
