@@ -23,7 +23,8 @@ export default function AdminSidebar() {
     const menuItems = [
         { icon: LayoutDashboard, label: "Overview", path: "/admin/dashboard", color: "text-neon-cyan" },
         { icon: Radio, label: "Signal Control", path: "/admin/signals", color: "text-neon-purple" },
-        { icon: Activity, label: "Telemetry", path: "/admin/telemetry", color: "text-emerald-500" },
+        { icon: Activity, label: "Analytics", path: "/admin/analytics", color: "text-emerald-500" },
+        { icon: Zap, label: "Appearance", path: "/admin/appearance", color: "text-neon-magenta" },
         { icon: Users, label: "Operators", path: "/admin/operators", color: "text-amber-500" },
     ];
 
@@ -59,8 +60,8 @@ export default function AdminSidebar() {
                                     key={item.path}
                                     href={item.path}
                                     className={`flex items-center justify-between p-4 rounded-2xl transition-all duration-300 group ${isActive
-                                            ? "bg-white/10 border border-white/10 shadow-[0_0_20px_rgba(34,211,238,0.1)]"
-                                            : "hover:bg-white/[0.03] border border-transparent"
+                                        ? "bg-white/10 border border-white/10 shadow-[0_0_20px_rgba(34,211,238,0.1)]"
+                                        : "hover:bg-white/[0.03] border border-transparent"
                                         }`}
                                 >
                                     <div className="flex items-center gap-4">
