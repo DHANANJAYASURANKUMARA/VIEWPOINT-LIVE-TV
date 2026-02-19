@@ -138,9 +138,9 @@ export default function MainLayoutWrapper({ children }: { children: React.ReactN
                 )}
             </AnimatePresence>
 
-            <main className={`flex-1 h-full flex flex-col transition-all duration-700 ${isCinemaMode ? "p-0" : ""}`}>
+            <main className={`flex-1 h-full flex flex-col transition-all duration-300 ${isCinemaMode ? "p-0" : ""}`}>
                 <AnimatePresence>
-                    {!isCinemaMode && (
+                    {!isCinemaMode && hasLaunched && (
                         <motion.div
                             initial={{ y: -100, opacity: 0 }}
                             animate={{ y: 0, opacity: 1 }}
