@@ -122,33 +122,54 @@ export default function MainLayoutWrapper({ children }: { children: React.ReactN
         // DevTools Detection using window size
         const detectDevTools = () => {
             const threshold = 160;
-            const widthDiff = window.outerWidth - window.innerWidth > threshold;
-            const heightDiff = window.outerHeight - window.innerHeight > threshold;
+            // Detect vertical or horizontal DevTools opening by comparing outer and inner dimensions
+            const isDevToolsOpen =
+                window.outerWidth - window.innerWidth > threshold ||
+                window.outerHeight - window.innerHeight > threshold;
 
-            if (widthDiff || heightDiff) {
-                // Potential DevTools open
-                // router.push("/warning"); // Disabled by default for better UX during development, but ready for production
+            if (isDevToolsOpen) {
+                router.push("/warning");
             }
+        };
+
+        // Console-based detection (Custom getter)
+        const element = new Image();
+        Object.defineProperty(element, 'id', {
+            get: () => {
+                router.push("/warning");
+            }
+        });
+
+        const checkConsole = () => {
+            console.log('%c', element);
         };
 
         window.addEventListener("contextmenu", handleContextMenu);
         window.addEventListener("keydown", handleKeyDown);
         window.addEventListener("resize", detectDevTools);
 
-        // Debugger loop (Alternative detection)
+        // Polling for DevTools state
+        const detectionInterval = setInterval(() => {
+            detectDevTools();
+            checkConsole();
+        }, 1000);
+
+        // Debugger loop (Triggers when DevTools is opened)
         const debugInterval = setInterval(() => {
-            const start = performance.now();
-            // debugger; // This will pause execution if DevTools is open
-            // If we spent too much time here, it means the debugger was triggered
-            if (performance.now() - start > 100) {
+            const startTime = performance.now();
+            (function () {
+                return false;
+            })["constructor"]("debugger")["call"]();
+            if (performance.now() - startTime > 100) {
                 router.push("/warning");
             }
-        }, 1000 * 2);
+        }, 1000);
 
         return () => {
             window.removeEventListener("contextmenu", handleContextMenu);
             window.removeEventListener("keydown", handleKeyDown);
             window.removeEventListener("resize", detectDevTools);
+            clearInterval(detectionInterval);
             clearInterval(debugInterval);
         };
     }, [isMounted, pathname, router]);
