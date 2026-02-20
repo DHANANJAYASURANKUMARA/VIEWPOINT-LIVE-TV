@@ -12,10 +12,13 @@ import {
     Plus,
     MoreVertical,
     TrendingUp,
-    Shield
+    Shield,
+    Edit2,
+    Trash2,
+    Calendar
 } from "lucide-react";
-import { motion } from "framer-motion";
-import { getDbStats, getChannels } from "@/lib/actions";
+import { motion, AnimatePresence } from "framer-motion";
+import { getDbStats, getChannels, updateChannel, deleteChannel } from "@/lib/actions";
 import { useConfig } from "@/components/ConfigContext";
 
 export default function AdminDashboard() {
@@ -26,6 +29,17 @@ export default function AdminDashboard() {
     const [channels, setChannels] = useState<any[]>([]);
     const { config, updateConfig } = useConfig();
 
+    const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+    const [editingSignal, setEditingSignal] = useState<any>(null);
+
+    const loadData = async () => {
+        const statsRes = await getDbStats();
+        if (statsRes.success) setDbStats(statsRes.stats);
+
+        const channelData = await getChannels();
+        setChannels(channelData);
+    };
+
     useEffect(() => {
         setIsMounted(true);
         const auth = localStorage.getItem("vpoint-admin-auth");
@@ -33,14 +47,25 @@ export default function AdminDashboard() {
             router.push("/admin/login");
         }
 
-        getDbStats().then(res => {
-            if (res.success) setDbStats(res.stats);
-        });
-
-        getChannels().then(data => {
-            setChannels(data);
-        });
+        loadData();
     }, [router]);
+
+    const handleUpdateSignal = async () => {
+        if (!editingSignal) return;
+        const res = await updateChannel(editingSignal.id, editingSignal);
+        if (res.success) {
+            setIsEditModalOpen(false);
+            setEditingSignal(null);
+            loadData();
+        }
+    };
+
+    const handleDeleteSignal = async (id: string) => {
+        if (confirm("TERMINATE SIGNAL NODE?")) {
+            const res = await deleteChannel(id);
+            if (res.success) loadData();
+        }
+    };
 
     if (!isMounted) return null;
 
@@ -118,19 +143,39 @@ export default function AdminDashboard() {
                                     <tr key={idx} className="hover:bg-white/[0.02] transition-colors group">
                                         <td className="px-8 py-6">
                                             <div className="flex items-center gap-4">
-                                                <div className={`w-2 h-2 rounded-full shadow-[0_0_8px_rgba(34,211,238,0.5)] ${row.status === 'Live' ? 'bg-emerald-500' : 'bg-red-500'}`} />
+                                                <div className={`w-2 h-2 rounded-full shadow-[0_0_8px_rgba(34,211,238,0.5)] ${row.status === 'Live' ? 'bg-emerald-500' : row.status === 'Scheduled' ? 'bg-amber-500' : 'bg-red-500'}`} />
                                                 <span className="text-[11px] font-bold text-white uppercase tracking-tight group-hover:text-neon-cyan transition-colors">{row.name}</span>
                                             </div>
                                         </td>
                                         <td className="px-8 py-6 text-[10px] font-bold text-slate-400 uppercase tracking-widest">{row.category}</td>
-                                        <td className="px-8 py-6 text-[10px] font-mono font-bold text-blue-500">{row.status}</td>
+                                        <td className="px-8 py-6">
+                                            <div className="flex flex-col gap-1">
+                                                <span className={`text-[10px] font-mono font-bold ${row.status === 'Live' ? 'text-emerald-500' : row.status === 'Scheduled' ? 'text-amber-500' : 'text-red-500'}`}>{row.status}</span>
+                                                {row.status === 'Scheduled' && row.scheduledAt && (
+                                                    <span className="text-[8px] font-black text-slate-500 uppercase tracking-widest flex items-center gap-1">
+                                                        <Calendar size={8} /> {new Date(row.scheduledAt).toLocaleDateString()}
+                                                    </span>
+                                                )}
+                                            </div>
+                                        </td>
                                         <td className="px-8 py-6 text-right">
-                                            <button
-                                                onClick={() => router.push('/admin/signals')}
-                                                className="text-slate-700 hover:text-white transition-colors"
-                                            >
-                                                <MoreVertical size={16} />
-                                            </button>
+                                            <div className="flex items-center justify-end gap-2">
+                                                <button
+                                                    onClick={() => {
+                                                        setEditingSignal(row);
+                                                        setIsEditModalOpen(true);
+                                                    }}
+                                                    className="p-2 rounded-lg bg-white/5 border border-white/5 text-slate-500 hover:text-white hover:border-white/10 transition-all"
+                                                >
+                                                    <Edit2 size={12} />
+                                                </button>
+                                                <button
+                                                    onClick={() => handleDeleteSignal(row.id)}
+                                                    className="p-2 rounded-lg bg-white/5 border border-white/5 text-red-500/50 hover:text-red-500 hover:border-red-500/30 transition-all"
+                                                >
+                                                    <Trash2 size={12} />
+                                                </button>
+                                            </div>
                                         </td>
                                     </tr>
                                 ))}
@@ -192,6 +237,85 @@ export default function AdminDashboard() {
                     </div>
                 </div>
             </div>
+            {/* Dashboard Edit Modal Injection */}
+            <AnimatePresence>
+                {isEditModalOpen && editingSignal && (
+                    <div className="fixed inset-0 z-[100] flex items-center justify-center p-6 sm:p-10">
+                        <motion.div
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            exit={{ opacity: 0 }}
+                            className="absolute inset-0 bg-black/80 backdrop-blur-3xl"
+                            onClick={() => setIsEditModalOpen(false)}
+                        />
+                        <motion.div
+                            initial={{ opacity: 0, scale: 0.9, y: 30 }}
+                            animate={{ opacity: 1, scale: 1, y: 0 }}
+                            exit={{ opacity: 0, scale: 0.9, y: 30 }}
+                            className="w-full max-w-xl glass border border-white/10 rounded-[3rem] p-10 relative z-10 bg-vpoint-dark"
+                        >
+                            <div className="space-y-8">
+                                <div className="space-y-2">
+                                    <h2 className="text-3xl font-black text-white uppercase tracking-tighter">Quick <span className="text-neon-cyan">Modulation</span></h2>
+                                    <p className="text-[9px] font-black text-slate-500 uppercase tracking-[0.4em]">Rapid Structural Revision</p>
+                                </div>
+
+                                <div className="space-y-6">
+                                    <div className="grid grid-cols-2 gap-6">
+                                        <div className="space-y-4">
+                                            <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Identity</label>
+                                            <input
+                                                type="text"
+                                                value={editingSignal.name}
+                                                onChange={(e) => setEditingSignal({ ...editingSignal, name: e.target.value.toUpperCase() })}
+                                                className="w-full bg-white/5 border border-white/10 rounded-2xl py-5 px-8 text-xs font-bold text-white uppercase tracking-widest focus:outline-none focus:border-neon-cyan/50 transition-all font-mono"
+                                            />
+                                        </div>
+                                        <div className="space-y-4">
+                                            <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Lifecycle State</label>
+                                            <select
+                                                value={editingSignal.status}
+                                                onChange={(e) => setEditingSignal({ ...editingSignal, status: e.target.value })}
+                                                className="w-full bg-white/5 border border-white/10 rounded-2xl py-5 px-8 text-xs font-bold text-white uppercase tracking-widest focus:outline-none focus:border-neon-cyan/50 transition-all appearance-none cursor-pointer"
+                                            >
+                                                <option value="Live">Live</option>
+                                                <option value="Offline">Offline</option>
+                                                <option value="Scheduled">Scheduled</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                    {editingSignal.status === 'Scheduled' && (
+                                        <div className="space-y-4">
+                                            <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Launch Date/Time</label>
+                                            <input
+                                                type="datetime-local"
+                                                value={editingSignal.scheduledAt ? new Date(editingSignal.scheduledAt).toISOString().slice(0, 16) : ""}
+                                                onChange={(e) => setEditingSignal({ ...editingSignal, scheduledAt: e.target.value })}
+                                                className="w-full bg-white/5 border border-white/10 rounded-2xl py-5 px-8 text-xs font-bold text-white focus:outline-none focus:border-neon-cyan/50 transition-all"
+                                            />
+                                        </div>
+                                    )}
+                                </div>
+
+                                <div className="pt-6 grid grid-cols-2 gap-4">
+                                    <button
+                                        onClick={() => setIsEditModalOpen(false)}
+                                        className="py-5 glass-dark border border-white/10 rounded-2xl text-[10px] font-black uppercase tracking-[0.3em] text-slate-500 hover:text-white transition-all"
+                                    >
+                                        Abort
+                                    </button>
+                                    <button
+                                        onClick={handleUpdateSignal}
+                                        className="py-5 bg-white text-vpoint-dark rounded-2xl text-[10px] font-black uppercase tracking-[0.3em] hover:bg-neon-cyan hover:text-white transition-all shadow-2xl"
+                                    >
+                                        Save Changes
+                                    </button>
+                                </div>
+                            </div>
+                        </motion.div>
+                    </div>
+                )}
+            </AnimatePresence>
         </div>
     );
 }

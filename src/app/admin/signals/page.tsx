@@ -34,6 +34,7 @@ interface Signal {
     status: string;
     sniMask?: string;
     proxyActive?: boolean;
+    scheduledAt?: string | Date | null;
     masked?: boolean;
     lastChecked?: string;
 }
@@ -52,7 +53,9 @@ export default function SignalControlPage() {
         url: "",
         category: "Entertainment",
         sniMask: "",
-        proxyActive: false
+        proxyActive: false,
+        status: "Live",
+        scheduledAt: ""
     });
 
     useEffect(() => {
@@ -86,12 +89,13 @@ export default function SignalControlPage() {
             category: newSignal.category,
             sniMask: newSignal.sniMask,
             proxyActive: newSignal.proxyActive,
-            status: "Live"
+            status: newSignal.status,
+            scheduledAt: newSignal.status === 'Scheduled' ? newSignal.scheduledAt : null
         };
         const res = await addChannel(signal);
         if (res.success) {
             setIsAddModalOpen(false);
-            setNewSignal({ name: "", url: "", category: "Entertainment", sniMask: "", proxyActive: false });
+            setNewSignal({ name: "", url: "", category: "Entertainment", sniMask: "", proxyActive: false, status: "Live", scheduledAt: "" });
             loadSignals();
         }
     };
@@ -184,7 +188,7 @@ export default function SignalControlPage() {
                             >
                                 {/* Identity & Pulse */}
                                 <div className="flex items-center gap-6 w-full xl:w-auto">
-                                    <div className={`w-14 h-14 rounded-2xl flex items-center justify-center border transition-all ${signal.status === "Live" ? "bg-neon-purple/10 border-neon-purple/30 text-neon-purple" : "bg-red-500/10 border-red-500/20 text-red-500"
+                                    <div className={`w-14 h-14 rounded-2xl flex items-center justify-center border transition-all ${signal.status === "Live" ? "bg-neon-purple/10 border-neon-purple/30 text-neon-purple" : signal.status === "Scheduled" ? "bg-amber-500/10 border-amber-500/20 text-amber-500" : "bg-red-500/10 border-red-500/20 text-red-500"
                                         } shadow-2xl`}>
                                         <Radio size={24} className={signal.status === "Live" ? "animate-pulse" : ""} />
                                     </div>
@@ -193,9 +197,17 @@ export default function SignalControlPage() {
                                         <div className="flex items-center gap-4 mt-1">
                                             <span className="text-[9px] font-black text-slate-500 uppercase tracking-widest">{signal.category}</span>
                                             <span className="w-1 h-1 rounded-full bg-slate-800" />
-                                            <span className="text-[9px] font-black text-emerald-500 uppercase tracking-widest flex items-center gap-1.5">
-                                                <Activity size={10} /> Optimal Gain
+                                            <span className={`text-[9px] font-black uppercase tracking-widest flex items-center gap-1.5 ${signal.status === 'Live' ? 'text-emerald-500' : signal.status === 'Scheduled' ? 'text-amber-500' : 'text-slate-600'}`}>
+                                                <Activity size={10} /> {signal.status === 'Live' ? 'Optimal Gain' : signal.status === 'Scheduled' ? 'Pending Launch' : 'Zero Signal'}
                                             </span>
+                                            {signal.status === 'Scheduled' && signal.scheduledAt && (
+                                                <>
+                                                    <span className="w-1 h-1 rounded-full bg-slate-800" />
+                                                    <span className="text-[9px] font-black text-slate-500 uppercase tracking-widest flex items-center gap-1.5">
+                                                        <Calendar size={10} /> {new Date(signal.scheduledAt).toLocaleDateString()}
+                                                    </span>
+                                                </>
+                                            )}
                                         </div>
                                     </div>
                                 </div>
@@ -317,6 +329,31 @@ export default function SignalControlPage() {
                                             </select>
                                         </div>
                                     </div>
+                                    <div className="grid grid-cols-2 gap-6">
+                                        <div className="space-y-4">
+                                            <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Lifecycle State</label>
+                                            <select
+                                                value={newSignal.status}
+                                                onChange={(e) => setNewSignal({ ...newSignal, status: e.target.value })}
+                                                className="w-full bg-white/5 border border-white/10 rounded-2xl py-5 px-8 text-xs font-bold text-white uppercase tracking-widest focus:outline-none focus:border-neon-purple/50 transition-all appearance-none cursor-pointer"
+                                            >
+                                                <option value="Live">Live</option>
+                                                <option value="Offline">Offline</option>
+                                                <option value="Scheduled">Scheduled</option>
+                                            </select>
+                                        </div>
+                                        {newSignal.status === 'Scheduled' && (
+                                            <div className="space-y-4">
+                                                <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Launch Date/Time</label>
+                                                <input
+                                                    type="datetime-local"
+                                                    value={newSignal.scheduledAt || ""}
+                                                    onChange={(e) => setNewSignal({ ...newSignal, scheduledAt: e.target.value })}
+                                                    className="w-full bg-white/5 border border-white/10 rounded-2xl py-5 px-8 text-xs font-bold text-white focus:outline-none focus:border-neon-purple/50 transition-all font-mono"
+                                                />
+                                            </div>
+                                        )}
+                                    </div>
                                     <div className="space-y-4">
                                         <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Transmission Address (M3U8/MPD)</label>
                                         <input
@@ -397,7 +434,7 @@ export default function SignalControlPage() {
                                                 type="text"
                                                 value={editingSignal.name}
                                                 onChange={(e) => setEditingSignal({ ...editingSignal, name: e.target.value.toUpperCase() })}
-                                                className="w-full bg-white/5 border border-white/10 rounded-2xl py-5 px-8 text-xs font-bold text-white uppercase tracking-widest focus:outline-none focus:border-neon-cyan/50 transition-all"
+                                                className="w-full bg-white/5 border border-white/10 rounded-2xl py-5 px-8 text-xs font-bold text-white uppercase tracking-widest focus:outline-none focus:border-neon-cyan/50 transition-all font-mono"
                                             />
                                         </div>
                                         <div className="space-y-4">
@@ -413,6 +450,31 @@ export default function SignalControlPage() {
                                                 <option value="Movies" className="bg-vpoint-dark">Movies</option>
                                             </select>
                                         </div>
+                                    </div>
+                                    <div className="grid grid-cols-2 gap-6">
+                                        <div className="space-y-4">
+                                            <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Lifecycle State</label>
+                                            <select
+                                                value={editingSignal.status}
+                                                onChange={(e) => setEditingSignal({ ...editingSignal, status: e.target.value })}
+                                                className="w-full bg-white/5 border border-white/10 rounded-2xl py-5 px-8 text-xs font-bold text-white uppercase tracking-widest focus:outline-none focus:border-neon-cyan/50 transition-all appearance-none cursor-pointer"
+                                            >
+                                                <option value="Live">Live</option>
+                                                <option value="Offline">Offline</option>
+                                                <option value="Scheduled">Scheduled</option>
+                                            </select>
+                                        </div>
+                                        {editingSignal.status === 'Scheduled' && (
+                                            <div className="space-y-4">
+                                                <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Launch Date/Time</label>
+                                                <input
+                                                    type="datetime-local"
+                                                    value={editingSignal.scheduledAt ? new Date(editingSignal.scheduledAt).toISOString().slice(0, 16) : ""}
+                                                    onChange={(e) => setEditingSignal({ ...editingSignal, scheduledAt: e.target.value })}
+                                                    className="w-full bg-white/5 border border-white/10 rounded-2xl py-5 px-8 text-xs font-bold text-white focus:outline-none focus:border-neon-cyan/50 transition-all font-mono"
+                                                />
+                                            </div>
+                                        )}
                                     </div>
                                     <div className="space-y-4">
                                         <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Transmission Address</label>

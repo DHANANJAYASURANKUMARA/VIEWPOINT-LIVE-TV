@@ -11,6 +11,7 @@ export const channels = pgTable("channels", {
     sniMask: text("sni_mask").default(""),
     proxyActive: boolean("proxy_active").default(false),
     status: text("status").default("Live"), // Live, Offline, Scheduled
+    scheduledAt: timestamp("scheduled_at"),
     createdAt: timestamp("created_at").defaultNow(),
 });
 
