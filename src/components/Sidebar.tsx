@@ -138,9 +138,9 @@ export default function Sidebar({ onClose, activeChannelUrl }: SidebarProps) {
     const filteredChannels = channels.filter(c => {
         const matchesCategory = activeCategory === "All" || c.category === activeCategory;
         const matchesSearch = c.name.toLowerCase().includes(searchQuery.toLowerCase());
-        const isActuallyLive = c.isLive; // isLive is mapped from status === "Live" in loadChannels
+        const isActuallyLive = c.isLive;
         return matchesCategory && matchesSearch && isActuallyLive;
-    });
+    }).sort((a, b) => a.name.localeCompare(b.name));
 
     const categoryIcons: Record<string, any> = {
         All: <Globe size={16} />,
