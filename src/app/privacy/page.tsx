@@ -77,7 +77,7 @@ export default function PrivacyPage() {
                             You maintain full control over your data. You may:
                             (a) disable cookies in your browser settings,
                             (b) opt out of Google personalised ads via Google's ad settings,
-                            (c) delete your VIEWPOINT account and all associated data at any time by contacting us at <a href="mailto:legal@viewpoint.live" className="text-neon-cyan hover:underline">legal@viewpoint.live</a>.
+                            (c) delete your VIEWPOINT account and all associated data at any time by contacting us at <a href="mailto:viewpointlivetv@gmail.com" className="text-neon-cyan hover:underline">viewpointlivetv@gmail.com</a>.
                         </p>
                     </section>
 
@@ -95,7 +95,7 @@ export default function PrivacyPage() {
                             <span className="w-8 h-[1px] bg-neon-purple/30" /> 07. Contact
                         </h2>
                         <p className="text-xs leading-relaxed text-slate-400">
-                            For privacy-related inquiries, email us at: <a href="mailto:legal@viewpoint.live" className="text-neon-cyan hover:underline">legal@viewpoint.live</a>. We respond within 48 hours.
+                            For privacy-related inquiries, email us at: <a href="mailto:viewpointlivetv@gmail.com" className="text-neon-cyan hover:underline">viewpointlivetv@gmail.com</a>. We respond within 48 hours.
                         </p>
                     </section>
                 </div>
@@ -120,3 +120,4 @@ export default function PrivacyPage() {
         </div>
     );
 }
+

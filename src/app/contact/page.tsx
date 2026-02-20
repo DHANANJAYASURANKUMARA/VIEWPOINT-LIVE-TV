@@ -34,25 +34,25 @@ export default function ContactPage() {
                             icon: Mail,
                             title: "General Support",
                             desc: "For questions about watching live TV, channel requests, or technical issues with our free streaming platform.",
-                            email: "support@viewpoint.live",
+                            email: "supportviewpointlivetv@gmail.com",
                         },
                         {
                             icon: Globe,
                             title: "Partnership & Advertising",
                             desc: "Interested in advertising on VIEWPOINT? Reach millions of live TV viewers. Contact our partnerships team.",
-                            email: "ads@viewpoint.live",
+                            email: "adsviewpointlivetv@gmail.com",
                         },
                         {
                             icon: MessageSquare,
                             title: "DMCA & Legal",
                             desc: "For copyright concerns, content removal requests, or legal inquiries. We respond within 24–48 hours.",
-                            email: "legal@viewpoint.live",
+                            email: "legalviewpointlivetv@gmail.com",
                         },
                         {
                             icon: Globe,
                             title: "Press & Media",
                             desc: "Media enquiries, press releases, and journalist access requests for VIEWPOINT Live TV.",
-                            email: "press@viewpoint.live",
+                            email: "pressviewpointlivetv@gmail.com",
                         },
                     ].map(({ icon: Icon, title, desc, email }) => (
                         <div key={title} className="glass border border-white/10 rounded-2xl p-6 space-y-3 bg-white/[0.02] hover:border-neon-cyan/20 transition-all">
@@ -77,7 +77,7 @@ export default function ContactPage() {
                             { q: "Is VIEWPOINT really free?", a: "Yes! VIEWPOINT is a completely free live TV streaming platform. No subscription, no credit card, no registration required to watch live channels." },
                             { q: "Can I watch T20 World Cup live for free?", a: "Yes, we stream major cricket tournaments including the T20 World Cup, IPL, and other international cricket series for free in HD." },
                             { q: "Which devices support VIEWPOINT?", a: "VIEWPOINT works on any device with a web browser — smartphone, tablet, laptop, PC, or smart TV. We also have an Android app available." },
-                            { q: "How do I report a broken channel?", a: "Email us at support@viewpoint.live with the channel name and we'll fix it within 24 hours." },
+                            { q: "How do I report a broken channel?", a: "Email us at supportviewpointlivetv@gmail.com with the channel name and we'll fix it within 24 hours." },
                         ].map(({ q, a }) => (
                             <div key={q} className="border-b border-white/5 pb-4">
                                 <h3 className="text-xs font-black text-white mb-2 uppercase tracking-wide">{q}</h3>
@@ -99,3 +99,4 @@ export default function ContactPage() {
         </div>
     );
 }
+
