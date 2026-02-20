@@ -6,14 +6,15 @@ import AdminSidebar from "./AdminSidebar";
 import TopBar from "./TopBar";
 import SettingsModal from "./SettingsModal";
 import { AnimatePresence, motion } from "framer-motion";
-import { usePathname } from "next/navigation";
-import { Shield } from "lucide-react";
+import { usePathname, useRouter } from "next/navigation";
+import { Shield, ShieldAlert } from "lucide-react";
 
 import { useConfig } from "./ConfigContext";
 
 export default function MainLayoutWrapper({ children }: { children: React.ReactNode }) {
     const { config } = useConfig();
     const pathname = usePathname();
+    const router = useRouter();
     const isWatchPage = pathname === "/watch";
     const isAdminSector = pathname.startsWith("/admin");
     const isAdminLogin = pathname === "/admin/login";
@@ -91,6 +92,66 @@ export default function MainLayoutWrapper({ children }: { children: React.ReactN
             } catch { /* ignore parse error */ }
         }
     }, [isMounted]);
+
+    // DevTools Protection
+    useEffect(() => {
+        if (!isMounted || pathname === "/warning") return;
+
+        const handleContextMenu = (e: MouseEvent) => {
+            e.preventDefault();
+        };
+
+        const handleKeyDown = (e: KeyboardEvent) => {
+            // Block F12
+            if (e.key === "F12") {
+                e.preventDefault();
+                router.push("/warning");
+            }
+            // Block Ctrl+Shift+I, J, C
+            if (e.ctrlKey && e.shiftKey && (e.key === "I" || e.key === "J" || e.key === "C")) {
+                e.preventDefault();
+                router.push("/warning");
+            }
+            // Block Ctrl+U (View Source)
+            if (e.ctrlKey && (e.key === "u" || e.key === "U")) {
+                e.preventDefault();
+                router.push("/warning");
+            }
+        };
+
+        // DevTools Detection using window size
+        const detectDevTools = () => {
+            const threshold = 160;
+            const widthDiff = window.outerWidth - window.innerWidth > threshold;
+            const heightDiff = window.outerHeight - window.innerHeight > threshold;
+
+            if (widthDiff || heightDiff) {
+                // Potential DevTools open
+                // router.push("/warning"); // Disabled by default for better UX during development, but ready for production
+            }
+        };
+
+        window.addEventListener("contextmenu", handleContextMenu);
+        window.addEventListener("keydown", handleKeyDown);
+        window.addEventListener("resize", detectDevTools);
+
+        // Debugger loop (Alternative detection)
+        const debugInterval = setInterval(() => {
+            const start = performance.now();
+            // debugger; // This will pause execution if DevTools is open
+            // If we spent too much time here, it means the debugger was triggered
+            if (performance.now() - start > 100) {
+                router.push("/warning");
+            }
+        }, 1000 * 2);
+
+        return () => {
+            window.removeEventListener("contextmenu", handleContextMenu);
+            window.removeEventListener("keydown", handleKeyDown);
+            window.removeEventListener("resize", detectDevTools);
+            clearInterval(debugInterval);
+        };
+    }, [isMounted, pathname, router]);
 
     // Effect for event listeners
     useEffect(() => {
