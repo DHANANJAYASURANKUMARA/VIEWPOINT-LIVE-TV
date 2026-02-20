@@ -42,145 +42,6 @@ interface Channel {
     isLive: boolean;
 }
 
-const initialChannels: Channel[] = [
-    {
-        id: "asia-tv",
-        name: "ASIA TV",
-        url: "https://stream.asiatvnet.com/1/live/master.m3u8",
-        category: "Entertainment",
-        description: "Live Asian entertainment and news broadcasting.",
-        isLive: true
-    },
-    {
-        id: "hiru-tv",
-        name: "HIRU TV",
-        url: "https://tv.hiruhost.com:1936/8012/8012/playlist.m3u8",
-        category: "Entertainment",
-        description: "Sri Lanka's number one entertainment channel.",
-        isLive: true
-    },
-    {
-        id: "siyatha-tv",
-        name: "SIYATHA TV",
-        url: "https://rtmp01.voaplus.com/hls/6x6ik312qk4grfxocfcv.m3u8",
-        category: "Entertainment",
-        description: "Premium Sinhala entertainment and lifestyle channel.",
-        isLive: true
-    },
-    {
-        id: "swarnawahini",
-        name: "SWARNAWAHINI",
-        url: "https://jk3lz8xklw79-hls-live.5centscdn.com/live/6226f7cbe59e99a90b5cef6f94f966fd.sdp/playlist.m3u8",
-        category: "Entertainment",
-        description: "The golden channel of Sri Lankan television.",
-        isLive: true
-    },
-    {
-        id: "tv-1",
-        name: "TV 1",
-        url: "https://d3ssd0juqbxbw.cloudfront.net/mtvsinstlive/master.m3u8",
-        category: "Entertainment",
-        description: "Innovative programming and global content for Sri Lanka.",
-        isLive: true
-    },
-    {
-        id: "apple-event",
-        name: "Apple Event Stream",
-        url: "https://apple-event.apple.com/main.m3u8",
-        category: "Tech",
-        description: "Official Apple events and product launches.",
-        isLive: false
-    },
-    {
-        id: "mux-test",
-        name: "Mux Global Stream",
-        url: "https://test-streams.mux.dev/x36xhzz/x36xhzz.m3u8",
-        category: "Sports",
-        description: "Worldwide sports and news coverage.",
-        isLive: true
-    },
-    {
-        id: "star-sports-1",
-        name: "STAR SPORTS 01",
-        url: "https://playerado.top/embed2.php?id=starsp",
-        category: "Sports",
-        description: "Premier cricket and international sports coverage.",
-        isLive: true
-    },
-    {
-        id: "star-sports-2",
-        name: "STAR SPORTS 02",
-        url: "https://playerado.top/embed2.php?id=starsp2",
-        category: "Sports",
-        description: "Live football, tennis, and secondary cricket feeds.",
-        isLive: true
-    },
-    {
-        id: "star-sports-3",
-        name: "STAR SPORTS 03",
-        url: "https://playerado.top/embed2.php?id=starsp3",
-        category: "Sports",
-        description: "Regional sports content and dedicated match analysis.",
-        isLive: true
-    },
-    {
-        id: "sky-sports",
-        name: "SKY SPORTS",
-        url: "https://playerado.top/embed2.php?id=crich2",
-        category: "Sports",
-        description: "World-class football, F1, and multi-sport broadcasting.",
-        isLive: true
-    },
-    {
-        id: "willow-sports",
-        name: "WILLOW SPORTS",
-        url: "https://playerado.top/embed2.php?id=willow",
-        category: "Sports",
-        description: "Dedicated 24/7 cricket streaming for international fans.",
-        isLive: true
-    },
-    {
-        id: "willow-extra",
-        name: "WILLOW EXTRA",
-        url: "https://playerado.top/embed2.php?id=willowextra",
-        category: "Sports",
-        description: "Secondary Willow feed for simultaneous live matches.",
-        isLive: true
-    },
-    {
-        id: "a-sports",
-        name: "A SPORTS",
-        url: "https://playerado.top/embed2.php?id=asports",
-        category: "Sports",
-        description: "Premium HD sports broadcasting from Pakistan.",
-        isLive: true
-    },
-    {
-        id: "akamai-hls",
-        name: "HLS News Live",
-        url: "https://cph-p2p-msl.akamaized.net/hls/live/2000341/test/master.m3u8",
-        category: "News",
-        description: "Global breaking news and reports.",
-        isLive: true
-    },
-    {
-        id: "akamai-dash",
-        name: "DASH Cinema HD",
-        url: "https://dash.akamaized.net/akamai/bbb_30fps/bbb_30fps.mpd",
-        category: "Movies",
-        description: "Premium cinematic experiences in UHD.",
-        isLive: false
-    },
-    {
-        id: "bitmovin-test",
-        name: "Art & Culture TV",
-        url: "https://bitmovin-a.akamaihd.net/content/MI201109210084_1/mpds/f08e80da-bf1d-4e3d-8899-f0f6155f6efa.mpd",
-        category: "Culture",
-        description: "Fine arts, style, and international culture.",
-        isLive: true
-    }
-];
-
 const categories = ["All", "Entertainment", "Sports", "News", "Movies", "Tech", "Culture", "Custom"];
 
 interface SidebarProps {
@@ -190,10 +51,11 @@ interface SidebarProps {
 
 export default function Sidebar({ onClose, activeChannelUrl }: SidebarProps) {
     const { config } = useConfig();
-    const [channels, setChannels] = useState<Channel[]>(initialChannels);
+    const [channels, setChannels] = useState<Channel[]>([]);
     const [searchQuery, setSearchQuery] = useState("");
     const [activeCategory, setActiveCategory] = useState("All");
     const [favorites, setFavorites] = useState<string[]>([]);
+    const [loading, setLoading] = useState(true);
 
     useEffect(() => {
         const loadChannels = async () => {
@@ -206,11 +68,13 @@ export default function Sidebar({ onClose, activeChannelUrl }: SidebarProps) {
                         url: c.url,
                         category: c.category,
                         description: `Managed ${c.category} transmission.`,
-                        isLive: c.status === "Live"
+                        isLive: (c.status || "Live") === "Live"
                     })));
                 }
             } catch (err) {
-                console.error("Signal Sync Failed:", err);
+                console.error("Sidebar DB sync failed:", err);
+            } finally {
+                setLoading(false);
             }
         };
         loadChannels();

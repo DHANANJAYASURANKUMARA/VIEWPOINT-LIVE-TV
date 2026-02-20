@@ -5,20 +5,6 @@ import { motion } from "framer-motion";
 import { Play, TrendingUp, Search } from "lucide-react";
 import { getChannels } from "@/lib/actions";
 
-// Keep initial channels for fallback
-const initialChannels = [
-    {
-        id: "asia-tv",
-        name: "ASIA TV",
-        url: "https://stream.asiatvnet.com/1/live/master.m3u8",
-        category: "Entertainment",
-        logo: "📡",
-        viewers: "12.4k",
-        trending: true
-    },
-    // ... other channels are the same, just keeping for logic
-];
-
 const categories = ["All", "Entertainment", "Sports", "News", "Movies", "Tech", "Culture"];
 
 interface ChannelGridProps {
@@ -36,12 +22,9 @@ export default function ChannelGrid({ onChannelSelect }: ChannelGridProps) {
                 const data = await getChannels();
                 if (data && data.length > 0) {
                     setChannels(data);
-                } else {
-                    // Fallback to static if DB is empty or fails
-                    setChannels(initialChannels);
                 }
             } catch (err) {
-                setChannels(initialChannels);
+                console.error("ChannelGrid DB sync failed:", err);
             } finally {
                 setLoading(false);
             }
@@ -51,7 +34,7 @@ export default function ChannelGrid({ onChannelSelect }: ChannelGridProps) {
 
     const filteredChannels = channels.filter(c => {
         const matchesCategory = activeCategory === "All" || c.category === activeCategory;
-        const isLive = c.status === "Live";
+        const isLive = (c.status || "Live") === "Live";
         return matchesCategory && isLive;
     });
 
