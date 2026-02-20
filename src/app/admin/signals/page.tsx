@@ -82,7 +82,7 @@ export default function SignalControlPage() {
     };
 
     const handleAddSignal = async () => {
-        const signal = {
+        const payload = {
             id: Date.now().toString(),
             name: newSignal.name.toUpperCase(),
             url: newSignal.url,
@@ -90,9 +90,9 @@ export default function SignalControlPage() {
             sniMask: newSignal.sniMask,
             proxyActive: newSignal.proxyActive,
             status: newSignal.status,
-            scheduledAt: newSignal.status === 'Scheduled' ? newSignal.scheduledAt : null
+            scheduledAt: newSignal.status === 'Scheduled' ? new Date(newSignal.scheduledAt).toISOString() : null
         };
-        const res = await addChannel(signal);
+        const res = await addChannel(payload);
         if (res.success) {
             setIsAddModalOpen(false);
             setNewSignal({ name: "", url: "", category: "Entertainment", sniMask: "", proxyActive: false, status: "Live", scheduledAt: "" });
@@ -102,7 +102,11 @@ export default function SignalControlPage() {
 
     const handleUpdateSignal = async () => {
         if (!editingSignal) return;
-        const res = await updateChannel(editingSignal.id, editingSignal);
+        const payload = { ...editingSignal };
+        if (payload.status === 'Scheduled' && payload.scheduledAt) {
+            payload.scheduledAt = new Date(payload.scheduledAt).toISOString();
+        }
+        const res = await updateChannel(editingSignal.id, payload);
         if (res.success) {
             setIsEditModalOpen(false);
             setEditingSignal(null);
@@ -469,7 +473,7 @@ export default function SignalControlPage() {
                                                 <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Launch Date/Time</label>
                                                 <input
                                                     type="datetime-local"
-                                                    value={editingSignal.scheduledAt ? new Date(editingSignal.scheduledAt).toISOString().slice(0, 16) : ""}
+                                                    value={editingSignal.scheduledAt ? new Date(new Date(editingSignal.scheduledAt).getTime() - (new Date(editingSignal.scheduledAt).getTimezoneOffset() * 60000)).toISOString().slice(0, 16) : ""}
                                                     onChange={(e) => setEditingSignal({ ...editingSignal, scheduledAt: e.target.value })}
                                                     className="w-full bg-white/5 border border-white/10 rounded-2xl py-5 px-8 text-xs font-bold text-white focus:outline-none focus:border-neon-cyan/50 transition-all font-mono"
                                                 />

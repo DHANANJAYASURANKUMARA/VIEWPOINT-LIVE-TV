@@ -18,7 +18,7 @@ import {
     Calendar
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
-import { getDbStats, getChannels, updateChannel, deleteChannel } from "@/lib/actions";
+import { getDbStats, getChannels, updateChannel, deleteChannel, addChannel } from "@/lib/actions";
 import { useConfig } from "@/components/ConfigContext";
 
 export default function AdminDashboard() {
@@ -30,7 +30,15 @@ export default function AdminDashboard() {
     const { config, updateConfig } = useConfig();
 
     const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+    const [isAddModalOpen, setIsAddModalOpen] = useState(false);
     const [editingSignal, setEditingSignal] = useState<any>(null);
+    const [newSignal, setNewSignal] = useState({
+        name: "",
+        url: "",
+        category: "Entertainment",
+        status: "Live",
+        scheduledAt: ""
+    });
 
     const loadData = async () => {
         const statsRes = await getDbStats();
@@ -52,10 +60,32 @@ export default function AdminDashboard() {
 
     const handleUpdateSignal = async () => {
         if (!editingSignal) return;
-        const res = await updateChannel(editingSignal.id, editingSignal);
+        // Convert local datetime-local value to UTC before saving
+        const payload = { ...editingSignal };
+        if (payload.status === 'Scheduled' && payload.scheduledAt) {
+            payload.scheduledAt = new Date(payload.scheduledAt).toISOString();
+        }
+        const res = await updateChannel(editingSignal.id, payload);
         if (res.success) {
             setIsEditModalOpen(false);
             setEditingSignal(null);
+            loadData();
+        }
+    };
+
+    const handleAddSignal = async () => {
+        const payload = {
+            id: Date.now().toString(),
+            name: newSignal.name.toUpperCase(),
+            url: newSignal.url,
+            category: newSignal.category,
+            status: newSignal.status,
+            scheduledAt: newSignal.status === 'Scheduled' ? new Date(newSignal.scheduledAt).toISOString() : null
+        };
+        const res = await addChannel(payload);
+        if (res.success) {
+            setIsAddModalOpen(false);
+            setNewSignal({ name: "", url: "", category: "Entertainment", status: "Live", scheduledAt: "" });
             loadData();
         }
     };
@@ -124,7 +154,10 @@ export default function AdminDashboard() {
                         <h3 className="text-sm font-black text-white uppercase tracking-[0.2em] flex items-center gap-3">
                             <Radio size={16} className="text-neon-purple" /> Active Signals
                         </h3>
-                        <button className="flex items-center gap-2 px-6 py-2.5 bg-neon-purple/20 border border-neon-purple/30 text-neon-purple rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-neon-purple hover:text-white transition-all">
+                        <button
+                            onClick={() => setIsAddModalOpen(true)}
+                            className="flex items-center gap-2 px-6 py-2.5 bg-neon-purple/20 border border-neon-purple/30 text-neon-purple rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-neon-purple hover:text-white transition-all"
+                        >
                             <Plus size={14} /> Inject Signal
                         </button>
                     </div>
@@ -139,7 +172,7 @@ export default function AdminDashboard() {
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-white/5">
-                                {channels.slice(0, 5).map((row, idx) => (
+                                {channels.map((row, idx) => (
                                     <tr key={idx} className="hover:bg-white/[0.02] transition-colors group">
                                         <td className="px-8 py-6">
                                             <div className="flex items-center gap-4">
@@ -289,7 +322,7 @@ export default function AdminDashboard() {
                                             <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Launch Date/Time</label>
                                             <input
                                                 type="datetime-local"
-                                                value={editingSignal.scheduledAt ? new Date(editingSignal.scheduledAt).toISOString().slice(0, 16) : ""}
+                                                value={editingSignal.scheduledAt ? new Date(new Date(editingSignal.scheduledAt).getTime() - (new Date(editingSignal.scheduledAt).getTimezoneOffset() * 60000)).toISOString().slice(0, 16) : ""}
                                                 onChange={(e) => setEditingSignal({ ...editingSignal, scheduledAt: e.target.value })}
                                                 className="w-full bg-white/5 border border-white/10 rounded-2xl py-5 px-8 text-xs font-bold text-white focus:outline-none focus:border-neon-cyan/50 transition-all"
                                             />
@@ -309,6 +342,110 @@ export default function AdminDashboard() {
                                         className="py-5 bg-white text-vpoint-dark rounded-2xl text-[10px] font-black uppercase tracking-[0.3em] hover:bg-neon-cyan hover:text-white transition-all shadow-2xl"
                                     >
                                         Save Changes
+                                    </button>
+                                </div>
+                            </div>
+                        </motion.div>
+                    </div>
+                )}
+            </AnimatePresence>
+
+            {/* Dashboard Add Modal Injection */}
+            <AnimatePresence>
+                {isAddModalOpen && (
+                    <div className="fixed inset-0 z-[100] flex items-center justify-center p-6 sm:p-10">
+                        <motion.div
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            exit={{ opacity: 0 }}
+                            className="absolute inset-0 bg-black/80 backdrop-blur-3xl"
+                            onClick={() => setIsAddModalOpen(false)}
+                        />
+                        <motion.div
+                            initial={{ opacity: 0, scale: 0.9, y: 30 }}
+                            animate={{ opacity: 1, scale: 1, y: 0 }}
+                            exit={{ opacity: 0, scale: 0.9, y: 30 }}
+                            className="w-full max-w-xl glass border border-white/10 rounded-[3rem] p-10 relative z-10 bg-vpoint-dark"
+                        >
+                            <div className="space-y-8">
+                                <div className="space-y-2">
+                                    <h2 className="text-3xl font-black text-white uppercase tracking-tighter">Inject <span className="text-neon-purple">Signal</span></h2>
+                                    <p className="text-[9px] font-black text-slate-500 uppercase tracking-[0.4em]">Establish New Transmission Node</p>
+                                </div>
+
+                                <div className="space-y-6">
+                                    <div className="grid grid-cols-2 gap-6">
+                                        <div className="space-y-4">
+                                            <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Identity</label>
+                                            <input
+                                                type="text"
+                                                placeholder="SIGNAL ID"
+                                                value={newSignal.name}
+                                                onChange={(e) => setNewSignal({ ...newSignal, name: e.target.value.toUpperCase() })}
+                                                className="w-full bg-white/5 border border-white/10 rounded-2xl py-5 px-8 text-xs font-bold text-white uppercase tracking-widest focus:outline-none focus:border-neon-purple/50 transition-all font-mono"
+                                            />
+                                        </div>
+                                        <div className="space-y-4">
+                                            <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Lifecycle State</label>
+                                            <select
+                                                value={newSignal.status}
+                                                onChange={(e) => setNewSignal({ ...newSignal, status: e.target.value })}
+                                                className="w-full bg-white/5 border border-white/10 rounded-2xl py-5 px-8 text-xs font-bold text-white uppercase tracking-widest focus:outline-none focus:border-neon-purple/50 transition-all appearance-none cursor-pointer"
+                                            >
+                                                <option value="Live">Live</option>
+                                                <option value="Offline">Offline</option>
+                                                <option value="Scheduled">Scheduled</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                    {newSignal.status === 'Scheduled' && (
+                                        <div className="space-y-4">
+                                            <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Launch Date/Time</label>
+                                            <input
+                                                type="datetime-local"
+                                                value={newSignal.scheduledAt || ""}
+                                                onChange={(e) => setNewSignal({ ...newSignal, scheduledAt: e.target.value })}
+                                                className="w-full bg-white/5 border border-white/10 rounded-2xl py-5 px-8 text-xs font-bold text-white focus:outline-none focus:border-neon-purple/50 transition-all font-mono"
+                                            />
+                                        </div>
+                                    )}
+                                    <div className="space-y-4">
+                                        <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Sector</label>
+                                        <select
+                                            value={newSignal.category}
+                                            onChange={(e) => setNewSignal({ ...newSignal, category: e.target.value })}
+                                            className="w-full bg-white/5 border border-white/10 rounded-2xl py-5 px-8 text-xs font-bold text-white uppercase tracking-widest focus:outline-none focus:border-neon-purple/50 transition-all appearance-none cursor-pointer"
+                                        >
+                                            <option value="Entertainment">Entertainment</option>
+                                            <option value="Sports">Sports</option>
+                                            <option value="News">News</option>
+                                            <option value="Movies">Movies</option>
+                                        </select>
+                                    </div>
+                                    <div className="space-y-4">
+                                        <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Transmission Address (M3U8/MPD)</label>
+                                        <input
+                                            type="text"
+                                            placeholder="HTTPS://..."
+                                            value={newSignal.url}
+                                            onChange={(e) => setNewSignal({ ...newSignal, url: e.target.value })}
+                                            className="w-full bg-white/5 border border-white/10 rounded-2xl py-5 px-8 text-xs font-bold text-white focus:outline-none focus:border-neon-purple/50 transition-all font-mono"
+                                        />
+                                    </div>
+                                </div>
+
+                                <div className="pt-6 grid grid-cols-2 gap-4">
+                                    <button
+                                        onClick={() => setIsAddModalOpen(false)}
+                                        className="py-5 glass-dark border border-white/10 rounded-2xl text-[10px] font-black uppercase tracking-[0.3em] text-slate-500 hover:text-white transition-all"
+                                    >
+                                        Abort
+                                    </button>
+                                    <button
+                                        onClick={handleAddSignal}
+                                        className="py-5 bg-white text-vpoint-dark rounded-2xl text-[10px] font-black uppercase tracking-[0.3em] hover:bg-neon-purple hover:text-white transition-all shadow-2xl"
+                                    >
+                                        Confirm Injection
                                     </button>
                                 </div>
                             </div>

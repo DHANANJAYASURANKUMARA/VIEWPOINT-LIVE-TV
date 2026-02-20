@@ -10,18 +10,29 @@ export async function getChannels() {
     try {
         const allChannels = await db.select().from(channels);
         const now = new Date();
+        let updatedCount = 0;
 
         // Auto-activation logic: If a channel is "Scheduled" and its scheduledAt time has passed,
         // we update it to "Live" in the database and return the updated state.
         const processedChannels = await Promise.all(allChannels.map(async (channel) => {
-            if (channel.status === 'Scheduled' && channel.scheduledAt && new Date(channel.scheduledAt) <= now) {
-                await db.update(channels)
-                    .set({ status: 'Live' })
-                    .where(eq(channels.id, channel.id));
-                return { ...channel, status: 'Live' };
+            if (channel.status === 'Scheduled' && channel.scheduledAt) {
+                const scheduledDate = new Date(channel.scheduledAt);
+                if (scheduledDate <= now) {
+                    await db.update(channels)
+                        .set({ status: 'Live' })
+                        .where(eq(channels.id, channel.id));
+                    updatedCount++;
+                    return { ...channel, status: 'Live' };
+                }
             }
             return channel;
         }));
+
+        if (updatedCount > 0) {
+            revalidatePath("/");
+            revalidatePath("/admin/signals");
+            revalidatePath("/admin/dashboard");
+        }
 
         return processedChannels;
     } catch (error) {
@@ -148,8 +159,11 @@ export async function deleteOperator(id: string) {
 
 export async function updateChannel(id: string, data: any) {
     try {
-        await db.update(channels).set(data).where(eq(channels.id, id));
+        // Strip id from data to prevent unique constraint conflict during update
+        const { id: _, ...payload } = data;
+        await db.update(channels).set(payload).where(eq(channels.id, id));
         revalidatePath("/admin/signals");
+        revalidatePath("/admin/dashboard");
         revalidatePath("/");
         return { success: true };
     } catch (error) {
