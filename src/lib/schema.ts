@@ -18,8 +18,10 @@ export const channels = pgTable("channels", {
 export const operators = pgTable("operators", {
     id: uuid("id").defaultRandom().primaryKey(),
     name: text("name").notNull(),
+    loginId: text("login_id").unique(), // Operator login ID (e.g. "OP-001")
     password: text("password"), // Hashed password
-    role: text("role").notNull().default("Operator"), // Lead, Operator, Analyst, Admin, Moderator
+    role: text("role").notNull().default("Operator"), // SuperAdmin, Lead, Operator, Analyst, Moderator
+    isSuperAdmin: boolean("is_super_admin").default(false),
     lastActive: timestamp("last_active").defaultNow(),
     status: text("status").default("Active"), // Active, Suspended
     createdAt: timestamp("created_at").defaultNow(),
@@ -49,5 +51,16 @@ export const users = pgTable("users", {
     device: text("device").default("Unknown"),
     lastLogin: timestamp("last_login"),
     isBanned: boolean("is_banned").default(false),
+    createdAt: timestamp("created_at").defaultNow(),
+});
+
+export const adminLogs = pgTable("admin_logs", {
+    id: uuid("id").defaultRandom().primaryKey(),
+    operatorName: text("operator_name").notNull().default("System"),
+    operatorId: text("operator_id"),
+    action: text("action").notNull(), // e.g. "BAN_USER", "CHANGE_PASSWORD", "DELETE_OPERATOR"
+    target: text("target"), // Who/what was affected
+    detail: text("detail"), // Extra detail / change description
+    category: text("category").default("SYSTEM"), // AUTH, CONFIG, OPERATOR, USER, SIGNAL
     createdAt: timestamp("created_at").defaultNow(),
 });

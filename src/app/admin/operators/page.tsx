@@ -2,268 +2,338 @@
 
 import React, { useState, useEffect } from "react";
 import {
-    Users,
-    UserPlus,
-    Shield,
-    MoreVertical,
-    Activity,
-    Trash2,
-    CheckCircle,
-    XCircle,
-    Search,
-    ShieldCheck,
-    Cpu
+    Users, UserPlus, Shield, ShieldAlert, ShieldCheck, Trash2,
+    Search, Eye, EyeOff, RefreshCw, Lock, AlertTriangle, Star,
+    Ban, Activity, Key, Copy, Check
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
-import { getOperators, manageOperator, deleteOperator } from "@/lib/actions";
+import {
+    getOperators,
+    manageOperator
+} from "@/lib/actions";
+import {
+    manageOperatorFull,
+    deleteOperatorSecure,
+    suspendOperator,
+    changeSuperAdminCredentials
+} from "@/lib/adminAuth";
+
+interface Operator {
+    id: string;
+    name: string;
+    loginId: string | null;
+    role: string;
+    isSuperAdmin: boolean | null;
+    status: string | null;
+    lastActive: Date | null;
+    createdAt: Date | null;
+}
 
 export default function OperatorManagementPage() {
-    const [operators, setOperators] = useState<any[]>([]);
-    const [searchTerm, setSearchTerm] = useState("");
-    const [isModalOpen, setIsModalOpen] = useState(false);
+    const [operators, setOperators] = useState<Operator[]>([]);
+    const [search, setSearch] = useState("");
     const [loading, setLoading] = useState(true);
-    const [currentOperator, setCurrentOperator] = useState({ name: "", password: "", role: "Operator", status: "Active" });
+    const [currentActor, setCurrentActor] = useState<any>(null);
+    const isSuperAdmin = currentActor?.isSuperAdmin === true;
+
+    // Add/Edit Operator modal
+    const [isModalOpen, setIsModalOpen] = useState(false);
+    const [editOp, setEditOp] = useState({ id: "", name: "", loginId: "", password: "", role: "Operator", status: "Active" });
+    const [showPassword, setShowPassword] = useState(false);
+    const [saving, setSaving] = useState(false);
+
+    // SA credential change modal
+    const [isSAModalOpen, setIsSAModalOpen] = useState(false);
+    const [saForm, setSaForm] = useState({ currentPassword: "", newLoginId: "", newPassword: "" });
+    const [saLoading, setSaLoading] = useState(false);
+    const [saError, setSaError] = useState("");
+    const [saSuccess, setSaSuccess] = useState("");
+
+    // Delete confirm
+    const [confirmDelete, setConfirmDelete] = useState<string | null>(null);
+    const [copied, setCopied] = useState(false);
 
     useEffect(() => {
+        const auth = localStorage.getItem("vpoint-admin-auth");
+        if (auth) {
+            try { setCurrentActor(JSON.parse(auth)); } catch { }
+        }
         loadOperators();
     }, []);
 
     const loadOperators = async () => {
         setLoading(true);
         const data = await getOperators();
-        setOperators(data);
+        setOperators(data as Operator[]);
         setLoading(false);
     };
 
+    const openAddModal = () => {
+        setEditOp({ id: "", name: "", loginId: "", password: "", role: "Operator", status: "Active" });
+        setShowPassword(false);
+        setIsModalOpen(true);
+    };
+
+    const openEditModal = (op: Operator) => {
+        setEditOp({ id: op.id, name: op.name, loginId: op.loginId || "", password: "", role: op.role, status: op.status || "Active" });
+        setShowPassword(false);
+        setIsModalOpen(true);
+    };
+
     const handleSave = async () => {
-        const res = await manageOperator(currentOperator);
+        if (!editOp.name) return;
+        setSaving(true);
+        // Generate loginId if creating and none specified
+        const payload = {
+            ...editOp,
+            loginId: editOp.loginId || `OP-${Date.now().toString(36).toUpperCase().slice(-4)}`,
+        };
+        const res = await manageOperatorFull(payload, currentActor?.name || "Super Admin");
+        setSaving(false);
         if (res.success) {
             setIsModalOpen(false);
-            setCurrentOperator({ name: "", password: "", role: "Operator", status: "Active" });
             loadOperators();
         }
     };
 
+    const handleSuspend = async (id: string, suspended: boolean) => {
+        await suspendOperator(id, !suspended, currentActor?.name || "Admin");
+        loadOperators();
+    };
+
     const handleDelete = async (id: string) => {
-        if (confirm("TERMINATE OPERATOR ACCESS?")) {
-            const res = await deleteOperator(id);
-            if (res.success) loadOperators();
+        const res = await deleteOperatorSecure(id, isSuperAdmin, currentActor?.name || "Admin");
+        if (res.success) { loadOperators(); setConfirmDelete(null); }
+    };
+
+    const handleSAChange = async () => {
+        setSaLoading(true); setSaError(""); setSaSuccess("");
+        const res = await changeSuperAdminCredentials(saForm.currentPassword, saForm.newLoginId, saForm.newPassword);
+        setSaLoading(false);
+        if (res.success) {
+            setSaSuccess("Credentials updated! Log out and log in with new credentials.");
+            setSaForm({ currentPassword: "", newLoginId: "", newPassword: "" });
+        } else {
+            setSaError(res.error || "Failed.");
         }
     };
 
+    const copyLoginId = (id: string) => {
+        navigator.clipboard.writeText(id);
+        setCopied(true);
+        setTimeout(() => setCopied(false), 2000);
+    };
+
     const filtered = operators.filter(op =>
-        op.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        op.role.toLowerCase().includes(searchTerm.toLowerCase())
+        op.name.toLowerCase().includes(search.toLowerCase()) ||
+        (op.loginId || "").toLowerCase().includes(search.toLowerCase()) ||
+        op.role.toLowerCase().includes(search.toLowerCase())
     );
+
+    const roles = ["Operator", "Analyst", "Moderator", "Lead"];
 
     return (
         <div className="flex-1 h-full p-10 space-y-10 overflow-y-auto custom-scrollbar relative">
-            {/* HUD Header */}
+            {/* Header */}
             <div className="flex items-center justify-between">
                 <div className="space-y-2">
                     <h1 className="text-4xl font-black text-white uppercase tracking-tighter">
-                        Operator <span className="text-neon-cyan">Management</span>
+                        Operator <span className="text-amber-500">Command</span>
                     </h1>
-                    <p className="text-[10px] font-black text-slate-500 uppercase tracking-[0.4em]">Manage Institutional Personnel</p>
+                    <p className="text-[10px] font-black text-slate-500 uppercase tracking-[0.4em]">Personnel & Access Control</p>
                 </div>
-                <button
-                    onClick={() => {
-                        setCurrentOperator({ name: "", password: "", role: "Operator", status: "Active" });
-                        setIsModalOpen(true);
-                    }}
-                    className="flex items-center gap-3 px-8 py-4 bg-white text-vpoint-dark rounded-2xl text-[10px] font-black uppercase tracking-[0.2em] hover:bg-neon-cyan hover:text-white hover:shadow-[0_0_30px_rgba(34,211,238,0.3)] transition-all"
-                >
-                    <UserPlus size={16} /> Provision Operator
-                </button>
+                <div className="flex items-center gap-3">
+                    {isSuperAdmin && (
+                        <button onClick={() => setIsSAModalOpen(true)} className="flex items-center gap-2 px-6 py-4 glass border border-amber-500/30 rounded-2xl text-[10px] font-black uppercase tracking-widest text-amber-400 hover:bg-amber-500/10 transition-all">
+                            <Key size={14} /> Change SA Credentials
+                        </button>
+                    )}
+                    {isSuperAdmin && (
+                        <button onClick={openAddModal} className="flex items-center gap-3 px-8 py-4 bg-white text-vpoint-dark rounded-2xl text-[10px] font-black uppercase tracking-[0.2em] hover:bg-neon-cyan hover:text-white transition-all">
+                            <UserPlus size={16} /> Provision Operator
+                        </button>
+                    )}
+                </div>
             </div>
 
-            {/* Stats Overview */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {/* Stats */}
+            <div className="grid grid-cols-3 gap-6">
                 {[
-                    { label: "Active Nodes", val: operators.filter(o => o.status === "Active").length, color: "text-emerald-500", icon: <CheckCircle size={14} /> },
-                    { label: "Lead Clearance", val: operators.filter(o => o.role === "Lead").length, color: "text-neon-purple", icon: <ShieldCheck size={14} /> },
-                    { label: "Total Sessions", val: operators.length * 12, color: "text-neon-cyan", icon: <Activity size={14} /> }
-                ].map((s, i) => (
-                    <div key={i} className="glass border border-white/5 p-6 rounded-[2rem] bg-white/[0.02] flex items-center justify-between">
-                        <div className="space-y-1">
-                            <p className="text-[8px] font-black text-slate-500 uppercase tracking-widest flex items-center gap-2">
-                                {s.icon} {s.label}
-                            </p>
-                            <p className={`text-2xl font-black ${s.color}`}>{s.val}</p>
-                        </div>
-                        <div className="w-10 h-10 rounded-full bg-white/5 flex items-center justify-center opacity-30">
-                            <Cpu size={16} />
-                        </div>
+                    { label: "Total Operators", value: operators.length, color: "text-white" },
+                    { label: "Active", value: operators.filter(o => o.status === "Active").length, color: "text-emerald-400" },
+                    { label: "Suspended", value: operators.filter(o => o.status === "Suspended").length, color: "text-red-400" },
+                ].map(stat => (
+                    <div key={stat.label} className="glass border border-white/10 rounded-[2rem] p-6 flex items-center justify-between">
+                        <span className="text-[9px] font-black text-slate-500 uppercase tracking-widest">{stat.label}</span>
+                        <span className={`text-2xl font-black ${stat.color}`}>{stat.value}</span>
                     </div>
                 ))}
             </div>
 
-            {/* Tactical Filter */}
-            <div className="relative group max-w-2xl">
-                <Search className="absolute left-6 top-1/2 -translate-y-1/2 text-slate-600 group-focus-within:text-neon-cyan transition-colors" size={18} />
-                <input
-                    type="text"
-                    placeholder="SCANNINING FOR PERSONNEL..."
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                    className="w-full bg-white/5 border border-white/10 rounded-[2rem] py-5 pl-16 pr-8 text-[11px] font-bold text-white uppercase tracking-[0.2em] placeholder:text-slate-700 focus:outline-none focus:border-neon-cyan/50 transition-all"
-                />
+            {/* Search */}
+            <div className="relative">
+                <Search className="absolute left-6 top-1/2 -translate-y-1/2 text-slate-600" size={16} />
+                <input type="text" placeholder="SEARCH OPERATORS..." value={search} onChange={e => setSearch(e.target.value)}
+                    className="w-full bg-white/5 border border-white/10 rounded-[2rem] py-4 pl-14 pr-6 text-[10px] font-bold text-white uppercase tracking-widest placeholder:text-slate-700 focus:outline-none focus:border-amber-500/50 transition-all" />
             </div>
 
-            {/* Operators List */}
-            <div className="grid grid-cols-1 gap-4">
+            {/* Operators table */}
+            <div className="glass border border-white/10 rounded-[3rem] overflow-hidden bg-white/5">
+                <div className="p-5 bg-white/[0.02] border-b border-white/5 grid grid-cols-12 gap-3 text-[9px] font-black text-slate-600 uppercase tracking-widest">
+                    <span className="col-span-3">Name</span>
+                    <span className="col-span-2">Login ID</span>
+                    <span className="col-span-2">Role</span>
+                    <span className="col-span-2 text-center">Last Active</span>
+                    <span className="col-span-1 text-center">Status</span>
+                    <span className="col-span-2 text-right">Actions</span>
+                </div>
                 {loading ? (
-                    <div className="flex flex-col items-center justify-center py-20 opacity-30">
-                        <div className="w-10 h-10 rounded-full border-2 border-neon-cyan border-t-transparent animate-spin mb-4" />
-                        <span className="text-[10px] font-black uppercase tracking-[0.2em]">Acquiring Personnel Data...</span>
+                    <div className="flex items-center justify-center py-16 opacity-30">
+                        <div className="w-8 h-8 border-2 border-amber-500 border-t-transparent rounded-full animate-spin" />
                     </div>
-                ) : filtered.map((op) => (
-                    <motion.div
-                        layout
-                        initial={{ opacity: 0, scale: 0.95 }}
-                        animate={{ opacity: 1, scale: 1 }}
-                        key={op.id}
-                        className="glass border border-white/5 p-6 rounded-[2.5rem] bg-white/[0.01] hover:bg-white/[0.03] transition-all flex flex-col md:flex-row items-center justify-between gap-6 group"
-                    >
-                        <div className="flex items-center gap-5 w-full md:w-auto">
-                            <div className={`w-14 h-14 rounded-2xl flex items-center justify-center border transition-all ${op.status === "Active" ? "bg-emerald-500/10 border-emerald-500/20 text-emerald-500" : "bg-red-500/10 border-red-500/20 text-red-500"
-                                }`}>
-                                <Users size={24} />
+                ) : filtered.map(op => (
+                    <div key={op.id} className={`p-5 grid grid-cols-12 gap-3 items-center border-b border-white/5 hover:bg-white/[0.02] transition-colors ${op.status === "Suspended" ? "opacity-50" : ""}`}>
+                        {/* Name */}
+                        <div className="col-span-3 flex items-center gap-3">
+                            <div className={`w-8 h-8 rounded-xl flex items-center justify-center text-xs border ${op.isSuperAdmin ? "bg-amber-500/10 border-amber-500/30 text-amber-400" : "bg-white/5 border-white/10 text-slate-500"}`}>
+                                {op.isSuperAdmin ? <Star size={14} /> : <Users size={14} />}
                             </div>
                             <div>
-                                <h3 className="text-lg font-black text-white uppercase tracking-tighter group-hover:text-neon-cyan transition-colors">{op.name}</h3>
-                                <div className="flex items-center gap-3 mt-1">
-                                    <span className="text-[9px] font-black text-slate-500 uppercase tracking-widest">{op.role}</span>
-                                    <span className="w-1 h-1 rounded-full bg-slate-800" />
-                                    <span className={`text-[9px] font-black uppercase tracking-widest ${op.status === "Active" ? "text-emerald-500" : "text-red-500"}`}>
-                                        {op.status} Sector
-                                    </span>
-                                </div>
+                                <p className="text-[10px] font-black text-white uppercase">{op.name}</p>
+                                {op.isSuperAdmin && <p className="text-[8px] font-black text-amber-400 uppercase tracking-widest">Super Admin</p>}
                             </div>
                         </div>
-
-                        <div className="flex-1 grid grid-cols-2 gap-8 px-10">
-                            <div>
-                                <p className="text-[8px] font-black text-slate-600 uppercase tracking-widest mb-1">Clearance Level</p>
-                                <div className="flex items-center gap-2">
-                                    <Shield size={10} className={op.role === "Lead" ? "text-neon-purple" : "text-slate-700"} />
-                                    <span className="text-[10px] font-black text-white uppercase tracking-widest">Level {op.role === "Lead" ? "05" : "02"}</span>
-                                </div>
-                            </div>
-                            <div>
-                                <p className="text-[8px] font-black text-slate-600 uppercase tracking-widest mb-1">Last Handshake</p>
-                                <p className="text-[10px] font-black text-white uppercase tracking-widest">{new Date(op.lastActive).toLocaleTimeString()}</p>
-                            </div>
+                        {/* Login ID */}
+                        <div className="col-span-2 flex items-center gap-2">
+                            <span className="text-[10px] font-mono text-neon-cyan">{op.loginId || "—"}</span>
+                            {op.loginId && (
+                                <button onClick={() => copyLoginId(op.loginId!)} className="text-slate-600 hover:text-white transition-colors">
+                                    {copied ? <Check size={11} className="text-emerald-400" /> : <Copy size={11} />}
+                                </button>
+                            )}
                         </div>
-
-                        <div className="flex items-center gap-3 w-full md:w-auto pt-6 md:pt-0 border-t md:border-t-0 border-white/5">
-                            <button
-                                onClick={() => {
-                                    setCurrentOperator(op);
-                                    setIsModalOpen(true);
-                                }}
-                                className="p-4 rounded-xl glass-dark border border-white/10 text-slate-500 hover:text-white transition-all"
-                            >
-                                <Shield size={18} />
-                            </button>
-                            <button
-                                onClick={() => handleDelete(op.id)}
-                                className="p-4 rounded-xl glass-dark border border-white/10 text-red-500/50 hover:text-red-500 hover:border-red-500/30 transition-all"
-                            >
-                                <Trash2 size={18} />
-                            </button>
+                        {/* Role */}
+                        <div className="col-span-2">
+                            <span className={`px-2 py-1 rounded-lg text-[9px] font-black uppercase tracking-widest ${op.isSuperAdmin ? "bg-amber-500/10 text-amber-400 border border-amber-500/20" : "bg-white/5 text-slate-400 border border-white/5"}`}>
+                                {op.role}
+                            </span>
                         </div>
-                    </motion.div>
+                        {/* Last Active */}
+                        <div className="col-span-2 text-center">
+                            <span className="text-[9px] font-mono text-slate-500">
+                                {op.lastActive ? new Date(op.lastActive).toLocaleDateString() : "Never"}
+                            </span>
+                        </div>
+                        {/* Status */}
+                        <div className="col-span-1 flex justify-center">
+                            <span className={`text-[8px] font-black uppercase px-2 py-1 rounded-lg ${op.status === "Active" ? "bg-emerald-500/10 text-emerald-400 border border-emerald-500/20" : "bg-red-500/10 text-red-400 border border-red-500/20"}`}>
+                                {op.status}
+                            </span>
+                        </div>
+                        {/* Actions */}
+                        <div className="col-span-2 flex items-center justify-end gap-2">
+                            {isSuperAdmin && !op.isSuperAdmin && (
+                                <>
+                                    <button onClick={() => openEditModal(op)} title="Edit" className="p-2 rounded-xl bg-white/5 text-slate-400 hover:text-white hover:bg-white/10 transition-colors">
+                                        <Key size={13} />
+                                    </button>
+                                    <button onClick={() => handleSuspend(op.id, op.status === "Suspended")} title={op.status === "Suspended" ? "Reinstate" : "Suspend"} className={`p-2 rounded-xl transition-colors ${op.status === "Suspended" ? "bg-emerald-500/10 text-emerald-400" : "bg-amber-500/10 text-amber-400"}`}>
+                                        {op.status === "Suspended" ? <ShieldCheck size={13} /> : <Ban size={13} />}
+                                    </button>
+                                    <button onClick={() => setConfirmDelete(op.id)} title="Delete" className="p-2 rounded-xl bg-red-500/10 text-red-400 hover:bg-red-500/20 transition-colors">
+                                        <Trash2 size={13} />
+                                    </button>
+                                </>
+                            )}
+                            {!isSuperAdmin && !op.isSuperAdmin && (
+                                <span className="text-[9px] text-slate-700 uppercase tracking-widest">No Access</span>
+                            )}
+                            {op.isSuperAdmin && (
+                                <span className="text-[9px] text-amber-500/50 uppercase tracking-widest flex items-center gap-1"><ShieldAlert size={11} /> Protected</span>
+                            )}
+                        </div>
+                    </div>
                 ))}
             </div>
 
-            {/* Provisioning Modal */}
+            {/* Add/Edit Operator Modal */}
             <AnimatePresence>
                 {isModalOpen && (
-                    <div className="fixed inset-0 z-[100] flex items-center justify-center p-6 sm:p-10">
-                        <motion.div
-                            initial={{ opacity: 0 }}
-                            animate={{ opacity: 1 }}
-                            exit={{ opacity: 0 }}
-                            className="absolute inset-0 bg-black/80 backdrop-blur-3xl"
-                            onClick={() => setIsModalOpen(false)}
-                        />
-                        <motion.div
-                            initial={{ opacity: 0, scale: 0.9, y: 30 }}
-                            animate={{ opacity: 1, scale: 1, y: 0 }}
-                            exit={{ opacity: 0, scale: 0.9, y: 30 }}
-                            className="w-full max-w-xl glass border border-white/10 rounded-[3rem] p-10 relative z-10 bg-vpoint-dark"
-                        >
-                            <div className="space-y-8">
-                                <div className="space-y-2">
-                                    <h2 className="text-3xl font-black text-white uppercase tracking-tighter">Provision <span className="text-neon-cyan">Operator</span></h2>
-                                    <p className="text-[9px] font-black text-slate-500 uppercase tracking-[0.4em]">Initialize Personnel Credentials</p>
-                                </div>
-
-                                <div className="space-y-6">
-                                    <div className="space-y-4">
-                                        <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Personnel ID</label>
-                                        <input
-                                            type="text"
-                                            placeholder="E.G. COMMANDER ALPHA"
-                                            value={currentOperator.name}
-                                            onChange={(e) => setCurrentOperator({ ...currentOperator, name: e.target.value.toUpperCase() })}
-                                            className="w-full bg-white/5 border border-white/10 rounded-2xl py-5 px-8 text-xs font-bold text-white uppercase tracking-widest placeholder:text-slate-800 focus:outline-none focus:border-neon-cyan/50 transition-all"
-                                        />
+                    <div className="fixed inset-0 z-50 flex items-center justify-center">
+                        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="absolute inset-0 bg-black/80 backdrop-blur-xl" onClick={() => setIsModalOpen(false)} />
+                        <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.9 }} className="relative z-10 glass border border-white/10 rounded-[2rem] p-10 w-full max-w-md space-y-6">
+                            <h2 className="text-xl font-black text-white uppercase tracking-tight">{editOp.id ? "Edit Operator" : "Provision Operator"}</h2>
+                            <div className="space-y-4">
+                                <input value={editOp.name} onChange={e => setEditOp(p => ({ ...p, name: e.target.value }))} placeholder="Operator Name" className="w-full bg-white/5 border border-white/10 rounded-2xl py-4 px-6 text-xs font-bold text-white focus:outline-none focus:border-amber-500/50 transition-all placeholder:text-slate-600" />
+                                <div className="grid grid-cols-2 gap-4">
+                                    <div>
+                                        <label className="text-[9px] font-black text-slate-500 uppercase tracking-widest ml-1 block mb-2">Login ID</label>
+                                        <input value={editOp.loginId} onChange={e => setEditOp(p => ({ ...p, loginId: e.target.value.toUpperCase() }))} placeholder="OP-XXXX (auto)" className="w-full bg-white/5 border border-white/10 rounded-2xl py-4 px-4 text-xs font-mono font-bold text-neon-cyan focus:outline-none focus:border-amber-500/50 transition-all placeholder:text-slate-600 uppercase" />
                                     </div>
-                                    <div className="space-y-4">
-                                        <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Access Key (Password)</label>
-                                        <input
-                                            type="password"
-                                            placeholder="••••••••"
-                                            value={currentOperator.password}
-                                            onChange={(e) => setCurrentOperator({ ...currentOperator, password: e.target.value })}
-                                            className="w-full bg-white/5 border border-white/10 rounded-2xl py-5 px-8 text-xs font-bold text-white tracking-widest placeholder:text-slate-800 focus:outline-none focus:border-neon-cyan/50 transition-all"
-                                        />
-                                    </div>
-                                    <div className="grid grid-cols-2 gap-6">
-                                        <div className="space-y-4">
-                                            <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Clearance</label>
-                                            <select
-                                                value={currentOperator.role}
-                                                onChange={(e) => setCurrentOperator({ ...currentOperator, role: e.target.value })}
-                                                className="w-full bg-white/5 border border-white/10 rounded-2xl py-5 px-8 text-xs font-bold text-white uppercase tracking-widest focus:outline-none focus:border-neon-cyan/50 transition-all appearance-none cursor-pointer"
-                                            >
-                                                <option value="Operator" className="bg-vpoint-dark text-white">Operator</option>
-                                                <option value="Lead" className="bg-vpoint-dark text-white">Lead</option>
-                                                <option value="Analyst" className="bg-vpoint-dark text-white">Analyst</option>
-                                                <option value="Admin" className="bg-vpoint-dark text-white">Admin</option>
-                                                <option value="Moderator" className="bg-vpoint-dark text-white">Moderator</option>
-                                            </select>
-                                        </div>
-                                        <div className="space-y-4">
-                                            <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Sector Status</label>
-                                            <select
-                                                value={currentOperator.status}
-                                                onChange={(e) => setCurrentOperator({ ...currentOperator, status: e.target.value })}
-                                                className="w-full bg-white/5 border border-white/10 rounded-2xl py-5 px-8 text-xs font-bold text-white uppercase tracking-widest focus:outline-none focus:border-neon-cyan/50 transition-all appearance-none cursor-pointer"
-                                            >
-                                                <option value="Active" className="bg-vpoint-dark text-white">Active</option>
-                                                <option value="Suspended" className="bg-vpoint-dark text-white">Suspended</option>
-                                            </select>
-                                        </div>
+                                    <div>
+                                        <label className="text-[9px] font-black text-slate-500 uppercase tracking-widest ml-1 block mb-2">Role</label>
+                                        <select value={editOp.role} onChange={e => setEditOp(p => ({ ...p, role: e.target.value }))} className="w-full bg-vpoint-dark border border-white/10 rounded-2xl py-4 px-4 text-xs font-bold text-white focus:outline-none focus:border-amber-500/50 transition-all">
+                                            {roles.map(r => <option key={r} value={r}>{r}</option>)}
+                                        </select>
                                     </div>
                                 </div>
-
-                                <div className="pt-6 grid grid-cols-2 gap-4">
-                                    <button
-                                        onClick={() => setIsModalOpen(false)}
-                                        className="py-5 glass-dark border border-white/10 rounded-2xl text-[10px] font-black uppercase tracking-[0.3em] text-slate-500 hover:text-white transition-all"
-                                    >
-                                        Abort
-                                    </button>
-                                    <button
-                                        onClick={handleSave}
-                                        className="py-5 bg-white text-vpoint-dark rounded-2xl text-[10px] font-black uppercase tracking-[0.3em] hover:bg-neon-cyan hover:text-white transition-all shadow-2xl"
-                                    >
-                                        Confirm Provision
+                                <div className="relative">
+                                    <input type={showPassword ? "text" : "password"} value={editOp.password} onChange={e => setEditOp(p => ({ ...p, password: e.target.value }))} placeholder={editOp.id ? "New Password (leave blank = no change)" : "Set Password"} className="w-full bg-white/5 border border-white/10 rounded-2xl py-4 pl-6 pr-14 text-xs font-mono font-bold text-white focus:outline-none focus:border-amber-500/50 transition-all placeholder:text-slate-600" />
+                                    <button type="button" onClick={() => setShowPassword(p => !p)} className="absolute right-5 top-1/2 -translate-y-1/2 text-slate-600 hover:text-white">
+                                        {showPassword ? <EyeOff size={15} /> : <Eye size={15} />}
                                     </button>
                                 </div>
+                            </div>
+                            <div className="flex gap-4">
+                                <button onClick={() => setIsModalOpen(false)} className="flex-1 py-4 glass border border-white/10 rounded-2xl text-[10px] font-black text-slate-500 uppercase tracking-widest hover:text-white transition-colors">Cancel</button>
+                                <button onClick={handleSave} disabled={saving} className="flex-1 py-4 bg-amber-500 text-vpoint-dark rounded-2xl text-[10px] font-black uppercase tracking-widest hover:bg-amber-400 transition-all disabled:opacity-50">
+                                    {saving ? "Saving..." : editOp.id ? "Update" : "Provision"}
+                                </button>
+                            </div>
+                        </motion.div>
+                    </div>
+                )}
+            </AnimatePresence>
+
+            {/* Super Admin Credential Change Modal */}
+            <AnimatePresence>
+                {isSAModalOpen && (
+                    <div className="fixed inset-0 z-50 flex items-center justify-center">
+                        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="absolute inset-0 bg-black/80 backdrop-blur-xl" onClick={() => setIsSAModalOpen(false)} />
+                        <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.9 }} className="relative z-10 glass border border-amber-500/20 rounded-[2rem] p-10 w-full max-w-md space-y-6">
+                            <div className="flex items-center gap-3">
+                                <Star size={22} className="text-amber-400" />
+                                <h2 className="text-xl font-black text-white uppercase tracking-tight">Super Admin Credentials</h2>
+                            </div>
+                            <div className="space-y-4">
+                                <input type="password" value={saForm.currentPassword} onChange={e => setSaForm(p => ({ ...p, currentPassword: e.target.value }))} placeholder="Current Password" className="w-full bg-white/5 border border-white/10 rounded-2xl py-4 px-6 text-xs font-mono font-bold text-white focus:outline-none focus:border-amber-500/50 transition-all placeholder:text-slate-600" />
+                                <input type="text" value={saForm.newLoginId} onChange={e => setSaForm(p => ({ ...p, newLoginId: e.target.value.toUpperCase() }))} placeholder="New Login ID (leave blank = keep current)" className="w-full bg-white/5 border border-white/10 rounded-2xl py-4 px-6 text-xs font-mono font-bold text-neon-cyan focus:outline-none focus:border-amber-500/50 transition-all placeholder:text-slate-600" />
+                                <input type="password" value={saForm.newPassword} onChange={e => setSaForm(p => ({ ...p, newPassword: e.target.value }))} placeholder="New Password (leave blank = keep current)" className="w-full bg-white/5 border border-white/10 rounded-2xl py-4 px-6 text-xs font-mono font-bold text-white focus:outline-none focus:border-amber-500/50 transition-all placeholder:text-slate-600" />
+                            </div>
+                            {saError && <p className="text-[10px] font-black text-red-400 uppercase tracking-widest">{saError}</p>}
+                            {saSuccess && <p className="text-[10px] font-black text-emerald-400 uppercase tracking-widest">{saSuccess}</p>}
+                            <div className="flex gap-4">
+                                <button onClick={() => setIsSAModalOpen(false)} className="flex-1 py-4 glass border border-white/10 rounded-2xl text-[10px] font-black text-slate-500 uppercase tracking-widest hover:text-white transition-colors">Cancel</button>
+                                <button onClick={handleSAChange} disabled={saLoading} className="flex-1 py-4 bg-amber-500 text-vpoint-dark rounded-2xl text-[10px] font-black uppercase tracking-widest hover:bg-amber-400 disabled:opacity-50 transition-all">
+                                    {saLoading ? "Updating..." : "Update Credentials"}
+                                </button>
+                            </div>
+                        </motion.div>
+                    </div>
+                )}
+            </AnimatePresence>
+
+            {/* Delete Confirm */}
+            <AnimatePresence>
+                {confirmDelete && (
+                    <div className="fixed inset-0 z-50 flex items-center justify-center">
+                        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="absolute inset-0 bg-black/80 backdrop-blur-xl" onClick={() => setConfirmDelete(null)} />
+                        <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.9 }} className="relative z-10 glass border border-red-500/20 rounded-[2rem] p-10 max-w-sm w-full text-center space-y-6">
+                            <AlertTriangle size={40} className="text-red-400 mx-auto" />
+                            <h3 className="text-xl font-black text-white uppercase">Terminate Operator?</h3>
+                            <div className="flex gap-4">
+                                <button onClick={() => setConfirmDelete(null)} className="flex-1 py-4 glass border border-white/10 rounded-2xl text-[10px] font-black text-slate-500 uppercase hover:text-white transition-colors">Cancel</button>
+                                <button onClick={() => handleDelete(confirmDelete)} className="flex-1 py-4 bg-red-500 text-white rounded-2xl text-[10px] font-black uppercase hover:bg-red-400 transition-colors">Delete</button>
                             </div>
                         </motion.div>
                     </div>
