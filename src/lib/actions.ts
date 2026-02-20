@@ -4,6 +4,7 @@ import { db } from "./db";
 import { channels, favorites, settings, operators } from "./schema";
 import { eq, and } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
+import bcrypt from "bcryptjs";
 
 export async function getChannels() {
     try {
@@ -98,10 +99,18 @@ export async function getOperators() {
 
 export async function manageOperator(data: any) {
     try {
-        if (data.id) {
-            await db.update(operators).set(data).where(eq(operators.id, data.id));
+        const payload = { ...data };
+
+        // Hash password if provided during creation or update
+        if (payload.password) {
+            const salt = await bcrypt.genSalt(10);
+            payload.password = await bcrypt.hash(payload.password, salt);
+        }
+
+        if (payload.id) {
+            await db.update(operators).set(payload).where(eq(operators.id, payload.id));
         } else {
-            await db.insert(operators).values(data);
+            await db.insert(operators).values(payload);
         }
         revalidatePath("/admin/operators");
         return { success: true };

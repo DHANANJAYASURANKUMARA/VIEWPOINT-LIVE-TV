@@ -17,7 +17,8 @@ export const channels = pgTable("channels", {
 export const operators = pgTable("operators", {
     id: uuid("id").defaultRandom().primaryKey(),
     name: text("name").notNull(),
-    role: text("role").notNull().default("Operator"), // Lead, Operator, Analyst
+    password: text("password"), // Hashed password
+    role: text("role").notNull().default("Operator"), // Lead, Operator, Analyst, Admin, Moderator
     lastActive: timestamp("last_active").defaultNow(),
     status: text("status").default("Active"), // Active, Suspended
     createdAt: timestamp("created_at").defaultNow(),

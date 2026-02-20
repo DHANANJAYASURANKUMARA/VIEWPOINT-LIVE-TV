@@ -44,6 +44,8 @@ export default function SignalControlPage() {
     const [isAddModalOpen, setIsAddModalOpen] = useState(false);
     const [loading, setLoading] = useState(true);
     const [syncing, setSyncing] = useState(false);
+    const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+    const [editingSignal, setEditingSignal] = useState<Signal | null>(null);
 
     const [newSignal, setNewSignal] = useState({
         name: "",
@@ -90,6 +92,16 @@ export default function SignalControlPage() {
         if (res.success) {
             setIsAddModalOpen(false);
             setNewSignal({ name: "", url: "", category: "Entertainment", sniMask: "", proxyActive: false });
+            loadSignals();
+        }
+    };
+
+    const handleUpdateSignal = async () => {
+        if (!editingSignal) return;
+        const res = await updateChannel(editingSignal.id, editingSignal);
+        if (res.success) {
+            setIsEditModalOpen(false);
+            setEditingSignal(null);
             loadSignals();
         }
     };
@@ -234,7 +246,13 @@ export default function SignalControlPage() {
 
                                 {/* Tactical Actions */}
                                 <div className="flex items-center gap-3 w-full xl:w-auto border-t xl:border-t-0 border-white/5 pt-6 xl:pt-0">
-                                    <button className="p-4 rounded-xl glass-dark border border-white/10 text-slate-500 hover:text-white transition-all">
+                                    <button
+                                        onClick={() => {
+                                            setEditingSignal(signal);
+                                            setIsEditModalOpen(true);
+                                        }}
+                                        className="p-4 rounded-xl glass-dark border border-white/10 text-slate-500 hover:text-white transition-all"
+                                    >
                                         <Edit2 size={18} />
                                     </button>
                                     <button
@@ -311,13 +329,21 @@ export default function SignalControlPage() {
                                     </div>
                                     <div className="space-y-4">
                                         <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">SNI Masking Key (Optional)</label>
-                                        <input
-                                            type="text"
-                                            placeholder="E.G. CLOUD.SERVER.COM"
-                                            value={newSignal.sniMask}
-                                            onChange={(e) => setNewSignal({ ...newSignal, sniMask: e.target.value })}
-                                            className="w-full bg-white/5 border border-white/10 rounded-2xl py-5 px-8 text-xs font-bold text-white focus:outline-none focus:border-neon-purple/50 transition-all font-mono"
-                                        />
+                                        <div className="flex items-center gap-4">
+                                            <input
+                                                type="text"
+                                                placeholder="E.G. CLOUD.SERVER.COM"
+                                                value={newSignal.sniMask}
+                                                onChange={(e) => setNewSignal({ ...newSignal, sniMask: e.target.value })}
+                                                className="flex-1 bg-white/5 border border-white/10 rounded-2xl py-5 px-8 text-xs font-bold text-white focus:outline-none focus:border-neon-purple/50 transition-all font-mono"
+                                            />
+                                            <button
+                                                onClick={() => setNewSignal({ ...newSignal, proxyActive: !newSignal.proxyActive })}
+                                                className={`px-6 py-5 rounded-2xl border transition-all text-[10px] font-black uppercase tracking-widest ${newSignal.proxyActive ? "bg-neon-cyan/20 border-neon-cyan/40 text-neon-cyan shadow-[0_0_20px_rgba(34,211,238,0.2)]" : "bg-white/5 border-white/10 text-slate-600"}`}
+                                            >
+                                                Proxy {newSignal.proxyActive ? "ON" : "OFF"}
+                                            </button>
+                                        </div>
                                     </div>
                                 </div>
 
@@ -333,6 +359,105 @@ export default function SignalControlPage() {
                                         className="py-5 bg-white text-vpoint-dark rounded-2xl text-[10px] font-black uppercase tracking-[0.3em] hover:bg-neon-purple hover:text-white transition-all shadow-2xl"
                                     >
                                         Confirm Injection
+                                    </button>
+                                </div>
+                            </div>
+                        </motion.div>
+                    </div>
+                )}
+            </AnimatePresence>
+            {/* Edit Modal */}
+            <AnimatePresence>
+                {isEditModalOpen && editingSignal && (
+                    <div className="fixed inset-0 z-[100] flex items-center justify-center p-6 sm:p-10">
+                        <motion.div
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            exit={{ opacity: 0 }}
+                            className="absolute inset-0 bg-black/80 backdrop-blur-3xl"
+                            onClick={() => setIsEditModalOpen(false)}
+                        />
+                        <motion.div
+                            initial={{ opacity: 0, scale: 0.9, y: 30 }}
+                            animate={{ opacity: 1, scale: 1, y: 0 }}
+                            exit={{ opacity: 0, scale: 0.9, y: 30 }}
+                            className="w-full max-w-xl glass border border-white/10 rounded-[3rem] p-10 relative z-10 bg-vpoint-dark"
+                        >
+                            <div className="space-y-8">
+                                <div className="space-y-2">
+                                    <h2 className="text-3xl font-black text-white uppercase tracking-tighter">Modulate <span className="text-neon-cyan">Signal</span></h2>
+                                    <p className="text-[9px] font-black text-slate-500 uppercase tracking-[0.4em]">Structural Refinement of Data Node</p>
+                                </div>
+
+                                <div className="space-y-6">
+                                    <div className="grid grid-cols-2 gap-6">
+                                        <div className="space-y-4">
+                                            <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Identity</label>
+                                            <input
+                                                type="text"
+                                                value={editingSignal.name}
+                                                onChange={(e) => setEditingSignal({ ...editingSignal, name: e.target.value.toUpperCase() })}
+                                                className="w-full bg-white/5 border border-white/10 rounded-2xl py-5 px-8 text-xs font-bold text-white uppercase tracking-widest focus:outline-none focus:border-neon-cyan/50 transition-all"
+                                            />
+                                        </div>
+                                        <div className="space-y-4">
+                                            <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Sector</label>
+                                            <select
+                                                value={editingSignal.category}
+                                                onChange={(e) => setEditingSignal({ ...editingSignal, category: e.target.value })}
+                                                className="w-full bg-white/5 border border-white/10 rounded-2xl py-5 px-8 text-xs font-bold text-white uppercase tracking-widest focus:outline-none focus:border-neon-cyan/50 transition-all appearance-none cursor-pointer"
+                                            >
+                                                <option value="Entertainment" className="bg-vpoint-dark">Entertainment</option>
+                                                <option value="Sports" className="bg-vpoint-dark">Sports</option>
+                                                <option value="News" className="bg-vpoint-dark">News</option>
+                                                <option value="Movies" className="bg-vpoint-dark">Movies</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div className="space-y-4">
+                                        <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Transmission Address</label>
+                                        <input
+                                            type="text"
+                                            value={editingSignal.url}
+                                            onChange={(e) => setEditingSignal({ ...editingSignal, url: e.target.value })}
+                                            className="w-full bg-white/5 border border-white/10 rounded-2xl py-5 px-8 text-xs font-bold text-white focus:outline-none focus:border-neon-cyan/50 transition-all font-mono"
+                                        />
+                                    </div>
+                                    <div className="space-y-4">
+                                        <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">SNI Masking & Proxy</label>
+                                        <div className="flex items-center gap-4">
+                                            <input
+                                                type="text"
+                                                value={editingSignal.sniMask || ""}
+                                                onChange={(e) => {
+                                                    if (editingSignal) {
+                                                        setEditingSignal({ ...editingSignal, sniMask: e.target.value });
+                                                    }
+                                                }}
+                                                className="flex-1 bg-white/5 border border-white/10 rounded-2xl py-5 px-8 text-xs font-bold text-white focus:outline-none focus:border-neon-cyan/50 transition-all font-mono"
+                                            />
+                                            <button
+                                                onClick={() => setEditingSignal({ ...editingSignal, proxyActive: !editingSignal.proxyActive })}
+                                                className={`px-6 py-5 rounded-2xl border transition-all text-[10px] font-black uppercase tracking-widest ${editingSignal.proxyActive ? "bg-neon-cyan/20 border-neon-cyan/40 text-neon-cyan shadow-[0_0_20px_rgba(34,211,238,0.2)]" : "bg-white/5 border-white/10 text-slate-600"}`}
+                                            >
+                                                Proxy {editingSignal.proxyActive ? "ON" : "OFF"}
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div className="pt-6 grid grid-cols-2 gap-4">
+                                    <button
+                                        onClick={() => setIsEditModalOpen(false)}
+                                        className="py-5 glass-dark border border-white/10 rounded-2xl text-[10px] font-black uppercase tracking-[0.3em] text-slate-500 hover:text-white transition-all"
+                                    >
+                                        Cancel
+                                    </button>
+                                    <button
+                                        onClick={handleUpdateSignal}
+                                        className="py-5 bg-white text-vpoint-dark rounded-2xl text-[10px] font-black uppercase tracking-[0.3em] hover:bg-neon-cyan hover:text-white transition-all shadow-2xl"
+                                    >
+                                        Save Changes
                                     </button>
                                 </div>
                             </div>

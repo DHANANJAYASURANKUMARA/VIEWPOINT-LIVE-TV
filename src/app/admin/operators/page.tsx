@@ -22,7 +22,7 @@ export default function OperatorManagementPage() {
     const [searchTerm, setSearchTerm] = useState("");
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [loading, setLoading] = useState(true);
-    const [currentOperator, setCurrentOperator] = useState({ name: "", role: "Operator", status: "Active" });
+    const [currentOperator, setCurrentOperator] = useState({ name: "", password: "", role: "Operator", status: "Active" });
 
     useEffect(() => {
         loadOperators();
@@ -39,7 +39,7 @@ export default function OperatorManagementPage() {
         const res = await manageOperator(currentOperator);
         if (res.success) {
             setIsModalOpen(false);
-            setCurrentOperator({ name: "", role: "Operator", status: "Active" });
+            setCurrentOperator({ name: "", password: "", role: "Operator", status: "Active" });
             loadOperators();
         }
     };
@@ -68,7 +68,7 @@ export default function OperatorManagementPage() {
                 </div>
                 <button
                     onClick={() => {
-                        setCurrentOperator({ name: "", role: "Operator", status: "Active" });
+                        setCurrentOperator({ name: "", password: "", role: "Operator", status: "Active" });
                         setIsModalOpen(true);
                     }}
                     className="flex items-center gap-3 px-8 py-4 bg-white text-vpoint-dark rounded-2xl text-[10px] font-black uppercase tracking-[0.2em] hover:bg-neon-cyan hover:text-white hover:shadow-[0_0_30px_rgba(34,211,238,0.3)] transition-all"
@@ -211,6 +211,16 @@ export default function OperatorManagementPage() {
                                             className="w-full bg-white/5 border border-white/10 rounded-2xl py-5 px-8 text-xs font-bold text-white uppercase tracking-widest placeholder:text-slate-800 focus:outline-none focus:border-neon-cyan/50 transition-all"
                                         />
                                     </div>
+                                    <div className="space-y-4">
+                                        <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Access Key (Password)</label>
+                                        <input
+                                            type="password"
+                                            placeholder="••••••••"
+                                            value={currentOperator.password}
+                                            onChange={(e) => setCurrentOperator({ ...currentOperator, password: e.target.value })}
+                                            className="w-full bg-white/5 border border-white/10 rounded-2xl py-5 px-8 text-xs font-bold text-white tracking-widest placeholder:text-slate-800 focus:outline-none focus:border-neon-cyan/50 transition-all"
+                                        />
+                                    </div>
                                     <div className="grid grid-cols-2 gap-6">
                                         <div className="space-y-4">
                                             <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Clearance</label>
@@ -222,6 +232,8 @@ export default function OperatorManagementPage() {
                                                 <option value="Operator" className="bg-vpoint-dark text-white">Operator</option>
                                                 <option value="Lead" className="bg-vpoint-dark text-white">Lead</option>
                                                 <option value="Analyst" className="bg-vpoint-dark text-white">Analyst</option>
+                                                <option value="Admin" className="bg-vpoint-dark text-white">Admin</option>
+                                                <option value="Moderator" className="bg-vpoint-dark text-white">Moderator</option>
                                             </select>
                                         </div>
                                         <div className="space-y-4">

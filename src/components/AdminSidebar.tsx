@@ -25,6 +25,7 @@ export default function AdminSidebar() {
         { icon: LayoutDashboard, label: "Overview", path: "/admin/dashboard", color: "text-neon-cyan" },
         { icon: Radio, label: "Signal Control", path: "/admin/signals", color: "text-neon-purple" },
         { icon: Activity, label: "Analytics", path: "/admin/analytics", color: "text-emerald-500" },
+        { icon: Users, label: "User Activity", path: "/admin/users", color: "text-neon-cyan" },
         { icon: Zap, label: "Appearance", path: "/admin/appearance", color: "text-neon-magenta" },
         { icon: Users, label: "Operators", path: "/admin/operators", color: "text-amber-500" },
         { icon: Database, label: "Database", path: "/admin/database", color: "text-emerald-500" },
