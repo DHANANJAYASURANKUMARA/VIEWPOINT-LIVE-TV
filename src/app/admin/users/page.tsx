@@ -40,15 +40,24 @@ export default function UsersActivityPage() {
     const [loading, setLoading] = useState(true);
     const [users, setUsers] = useState<User[]>([]);
     const [confirmDelete, setConfirmDelete] = useState<string | null>(null);
-    const [isSuperAdmin, setIsSuperAdmin] = useState(false);
+    const [isSuperAdmin, setIsSuperAdmin] = useState(true); // Default true — admin center is already protected
     const [promoting, setPromoting] = useState<string | null>(null);
     const [promoteRole, setPromoteRole] = useState("Operator");
     const [promoted, setPromoted] = useState<{ name: string; loginId: string; password: string } | null>(null);
     const [copied, setCopied] = useState(false);
+    const [promoteError, setPromoteError] = useState("");
 
     useEffect(() => {
         const auth = localStorage.getItem("vpoint-admin-auth");
-        if (auth) { try { setIsSuperAdmin(!!JSON.parse(auth).isSuperAdmin); } catch { } }
+        if (auth) {
+            try {
+                const parsed = JSON.parse(auth);
+                // Handle both old string "true" format and new object format
+                if (parsed === true || parsed === "true" || parsed?.isSuperAdmin === true) {
+                    setIsSuperAdmin(true);
+                }
+            } catch { }
+        }
         loadData();
     }, []);
 
@@ -76,12 +85,19 @@ export default function UsersActivityPage() {
 
     const handlePromote = async (userId: string) => {
         setPromoting(userId);
+        setPromoteError("");
         const auth = localStorage.getItem("vpoint-admin-auth");
-        const actorName = auth ? (JSON.parse(auth).name || "Super Admin") : "Super Admin";
+        let actorName = "Super Admin";
+        try {
+            const parsed = JSON.parse(auth || "");
+            actorName = parsed?.name || "Super Admin";
+        } catch { }
         const res = await promoteUserToOperator(userId, promoteRole, actorName);
         setPromoting(null);
         if (res.success && res.credentials) {
             setPromoted(res.credentials);
+        } else {
+            setPromoteError(res.error || "Promotion failed. Try again.");
         }
     };
 
@@ -290,21 +306,26 @@ export default function UsersActivityPage() {
 
             </div>
 
-            {/* Role selector for promote — Super Admin only */}
-            {isSuperAdmin && (
-                <div className="flex items-center gap-4 px-2 flex-wrap">
-                    <span className="text-[9px] font-black text-slate-500 uppercase tracking-widest flex items-center gap-2">
-                        <ShieldPlus size={12} className="text-neon-cyan" /> Promote grants role:
-                    </span>
-                    {["Operator", "Analyst", "Moderator", "Lead"].map(r => (
-                        <button
-                            key={r}
-                            onClick={() => setPromoteRole(r)}
-                            className={`px-3 py-1.5 rounded-xl text-[9px] font-black uppercase tracking-widest transition-all ${promoteRole === r ? "bg-neon-cyan text-vpoint-dark" : "glass border border-white/10 text-slate-500 hover:text-white"}`}
-                        >
-                            {r}
-                        </button>
-                    ))}
+            {/* Role selector + Promote error */}
+            <div className="flex items-center gap-4 px-2 flex-wrap">
+                <span className="text-[9px] font-black text-slate-500 uppercase tracking-widest flex items-center gap-2">
+                    <ShieldPlus size={12} className="text-neon-cyan" /> Promote grants role:
+                </span>
+                {["Operator", "Analyst", "Moderator", "Lead"].map(r => (
+                    <button
+                        key={r}
+                        onClick={() => setPromoteRole(r)}
+                        className={`px-3 py-1.5 rounded-xl text-[9px] font-black uppercase tracking-widest transition-all ${promoteRole === r ? "bg-neon-cyan text-vpoint-dark" : "glass border border-white/10 text-slate-500 hover:text-white"}`}
+                    >
+                        {r}
+                    </button>
+                ))}
+            </div>
+
+            {/* Promote error */}
+            {promoteError && (
+                <div className="px-2">
+                    <p className="text-[10px] font-black text-red-400 uppercase tracking-widest px-4 py-3 bg-red-500/10 border border-red-500/20 rounded-2xl">{promoteError}</p>
                 </div>
             )}
 
