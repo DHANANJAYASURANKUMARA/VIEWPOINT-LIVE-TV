@@ -1,4 +1,6 @@
 User-agent: *
 Allow: /
+Disallow: /admin/
+Disallow: /api/
 
-Sitemap: https://viewpoint-premium.vercel.app/sitemap.xml
+Sitemap: https://viewpoint-live.vercel.app/sitemap.xml

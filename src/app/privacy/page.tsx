@@ -47,30 +47,69 @@ export default function PrivacyPage() {
 
                     <section className="space-y-4">
                         <h2 className="text-sm font-black text-white uppercase tracking-[0.2em] flex items-center gap-3">
-                            <span className="w-8 h-[1px] bg-neon-purple/30" /> 03. Cookies & Tracking
+                            <span className="w-8 h-[1px] bg-neon-purple/30" /> 03. Cookies &amp; Tracking
                         </h2>
-                        <p className="text-xs leading-relaxed text-slate-400 uppercase tracking-widest">
-                            We utilize essential atmospheric cookies to maintain your dashboard configuration and signal preferences. Third-party telemetry, specifically Google AdSense, may utilize non-identifiable browser signals to provide relevant, atmospheric monetization experiences.
+                        <p className="text-xs leading-relaxed text-slate-400">
+                            VIEWPOINT uses essential cookies to maintain your preferences and session data. We also use Google Analytics to understand how visitors use our free live TV streaming platform. You may disable cookies in your browser settings without affecting core functionality.
                         </p>
                     </section>
 
                     <section className="space-y-4">
                         <h2 className="text-sm font-black text-white uppercase tracking-[0.2em] flex items-center gap-3">
-                            <span className="w-8 h-[1px] bg-neon-purple/30" /> 04. User Control
+                            <span className="w-8 h-[1px] bg-neon-purple/30" /> 04. Google AdSense &amp; Third-Party Advertising
                         </h2>
-                        <p className="text-xs leading-relaxed text-slate-400 uppercase tracking-widest">
-                            You maintain absolute control over your digital optics. You may terminate your neural handshake at any time, which instantly purges all temporary edge-cached data related to your current session.
+                        <p className="text-xs leading-relaxed text-slate-400">
+                            VIEWPOINT uses Google AdSense to display advertisements. Google, as a third-party vendor, uses cookies to serve ads on our site. Google's use of the DoubleClick cookie enables it and its partners to serve ads to our users based on their visit to our site and other sites on the internet.
+                        </p>
+                        <p className="text-xs leading-relaxed text-slate-400">
+                            You may opt out of the use of the DoubleClick cookie for interest-based advertising by visiting <a href="https://www.google.com/settings/ads" target="_blank" rel="noopener noreferrer" className="text-neon-cyan hover:underline">Google Ads Settings</a>. Alternatively, you can opt out of a third-party vendor's use of cookies for interest-based advertising by visiting <a href="https://www.aboutads.info/choices/" target="_blank" rel="noopener noreferrer" className="text-neon-cyan hover:underline">aboutads.info</a>.
+                        </p>
+                        <p className="text-xs leading-relaxed text-slate-400">
+                            We comply with the <strong className="text-white">Google Publisher Policies</strong> and do not place ads on pages with illegal content, adult content, or copyrighted material without authorisation. All ad placements follow Google AdSense program policies.
+                        </p>
+                    </section>
+
+                    <section className="space-y-4">
+                        <h2 className="text-sm font-black text-white uppercase tracking-[0.2em] flex items-center gap-3">
+                            <span className="w-8 h-[1px] bg-neon-purple/30" /> 05. User Control
+                        </h2>
+                        <p className="text-xs leading-relaxed text-slate-400">
+                            You maintain full control over your data. You may:
+                            (a) disable cookies in your browser settings,
+                            (b) opt out of Google personalised ads via Google's ad settings,
+                            (c) delete your VIEWPOINT account and all associated data at any time by contacting us at <a href="mailto:legal@viewpoint.live" className="text-neon-cyan hover:underline">legal@viewpoint.live</a>.
+                        </p>
+                    </section>
+
+                    <section className="space-y-4">
+                        <h2 className="text-sm font-black text-white uppercase tracking-[0.2em] flex items-center gap-3">
+                            <span className="w-8 h-[1px] bg-neon-purple/30" /> 06. Children's Privacy
+                        </h2>
+                        <p className="text-xs leading-relaxed text-slate-400">
+                            VIEWPOINT is not directed at children under 13 years of age. We do not knowingly collect personal information from children under 13. If you believe we have inadvertently collected such information, please contact us immediately.
+                        </p>
+                    </section>
+
+                    <section className="space-y-4">
+                        <h2 className="text-sm font-black text-white uppercase tracking-[0.2em] flex items-center gap-3">
+                            <span className="w-8 h-[1px] bg-neon-purple/30" /> 07. Contact
+                        </h2>
+                        <p className="text-xs leading-relaxed text-slate-400">
+                            For privacy-related inquiries, email us at: <a href="mailto:legal@viewpoint.live" className="text-neon-cyan hover:underline">legal@viewpoint.live</a>. We respond within 48 hours.
                         </p>
                     </section>
                 </div>
 
                 {/* Institutional Links */}
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-4 pt-10 border-t border-white/5">
-                    <Link href="/terms" className="text-[10px] font-black uppercase tracking-widest text-white/20 hover:text-neon-cyan transition-colors py-2">Entry Terms</Link>
-                    <Link href="/privacy" className="text-[10px] font-black uppercase tracking-widest text-neon-purple py-2">Privacy Shield</Link>
-                    <Link href="/dmca" className="text-[10px] font-black uppercase tracking-widest text-white/20 hover:text-neon-magenta transition-colors py-2">DMCA Request</Link>
-                    <Link href="/disclaimer" className="text-[10px] font-black uppercase tracking-widest text-white/20 hover:text-emerald-500 transition-colors py-2">Legal Disclaimer</Link>
+                <div className="grid grid-cols-2 md:grid-cols-6 gap-4 pt-10 border-t border-white/5">
+                    <Link href="/about" className="text-[10px] font-black uppercase tracking-widest text-white/20 hover:text-neon-cyan transition-colors py-2">About</Link>
+                    <Link href="/contact" className="text-[10px] font-black uppercase tracking-widest text-white/20 hover:text-neon-cyan transition-colors py-2">Contact</Link>
+                    <Link href="/terms" className="text-[10px] font-black uppercase tracking-widest text-white/20 hover:text-neon-cyan transition-colors py-2">Terms</Link>
+                    <Link href="/privacy" className="text-[10px] font-black uppercase tracking-widest text-neon-purple py-2">Privacy</Link>
+                    <Link href="/dmca" className="text-[10px] font-black uppercase tracking-widest text-white/20 hover:text-neon-magenta transition-colors py-2">DMCA</Link>
+                    <Link href="/disclaimer" className="text-[10px] font-black uppercase tracking-widest text-white/20 hover:text-emerald-500 transition-colors py-2">Disclaimer</Link>
                 </div>
+
 
                 {/* Footer Seal */}
                 <div className="pt-10 border-t border-white/5 flex flex-col md:flex-row items-center justify-between gap-6 opacity-30">
