@@ -4,9 +4,6 @@ import React, { useState, useEffect } from "react";
 import {
     Users as UsersIcon,
     Search,
-    Activity,
-    Clock,
-    Filter,
     Ban,
     Trash2,
     ShieldCheck,
@@ -14,10 +11,15 @@ import {
     Globe,
     Mail,
     RefreshCw,
-    AlertTriangle
+    AlertTriangle,
+    ShieldPlus,
+    Copy,
+    Check,
+    Star
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { getUsers, banUser, deleteUser, getDbStats } from "@/lib/actions";
+import { promoteUserToOperator } from "@/lib/adminAuth";
 
 interface User {
     id: string;
@@ -30,14 +32,23 @@ interface User {
     createdAt: Date | null;
 }
 
+const ROLES = ["Operator", "Analyst", "Moderator", "Lead"];
+
 export default function UsersActivityPage() {
     const [stats, setStats] = useState<any>(null);
     const [searchTerm, setSearchTerm] = useState("");
     const [loading, setLoading] = useState(true);
     const [users, setUsers] = useState<User[]>([]);
     const [confirmDelete, setConfirmDelete] = useState<string | null>(null);
+    const [isSuperAdmin, setIsSuperAdmin] = useState(false);
+    const [promoting, setPromoting] = useState<string | null>(null);
+    const [promoteRole, setPromoteRole] = useState("Operator");
+    const [promoted, setPromoted] = useState<{ name: string; loginId: string; password: string } | null>(null);
+    const [copied, setCopied] = useState(false);
 
     useEffect(() => {
+        const auth = localStorage.getItem("vpoint-admin-auth");
+        if (auth) { try { setIsSuperAdmin(!!JSON.parse(auth).isSuperAdmin); } catch { } }
         loadData();
     }, []);
 
@@ -61,6 +72,24 @@ export default function UsersActivityPage() {
         await deleteUser(id);
         setUsers(prev => prev.filter(u => u.id !== id));
         setConfirmDelete(null);
+    };
+
+    const handlePromote = async (userId: string) => {
+        setPromoting(userId);
+        const auth = localStorage.getItem("vpoint-admin-auth");
+        const actorName = auth ? (JSON.parse(auth).name || "Super Admin") : "Super Admin";
+        const res = await promoteUserToOperator(userId, promoteRole, actorName);
+        setPromoting(null);
+        if (res.success && res.credentials) {
+            setPromoted(res.credentials);
+        }
+    };
+
+    const copyAll = () => {
+        if (!promoted) return;
+        navigator.clipboard.writeText(`Login ID: ${promoted.loginId}\nPassword: ${promoted.password}`);
+        setCopied(true);
+        setTimeout(() => setCopied(false), 2000);
     };
 
     const filtered = users.filter(u =>
@@ -227,6 +256,18 @@ export default function UsersActivityPage() {
 
                                 {/* Actions */}
                                 <div className="col-span-1 flex items-center justify-end gap-2">
+                                    {isSuperAdmin && (
+                                        <button
+                                            onClick={() => handlePromote(user.id)}
+                                            disabled={promoting === user.id}
+                                            title="Promote to Operator"
+                                            className="p-2 rounded-xl bg-neon-cyan/10 text-neon-cyan hover:bg-neon-cyan/20 transition-colors disabled:opacity-50"
+                                        >
+                                            {promoting === user.id
+                                                ? <div className="w-3.5 h-3.5 border border-neon-cyan border-t-transparent rounded-full animate-spin" />
+                                                : <ShieldPlus size={14} />}
+                                        </button>
+                                    )}
                                     <button
                                         onClick={() => handleBan(user.id, user.isBanned)}
                                         title={user.isBanned ? "Unban User" : "Ban User"}
@@ -246,7 +287,99 @@ export default function UsersActivityPage() {
                         ))}
                     </div>
                 )}
+
             </div>
+
+            {/* Role selector for promote — Super Admin only */}
+            {isSuperAdmin && (
+                <div className="flex items-center gap-4 px-2 flex-wrap">
+                    <span className="text-[9px] font-black text-slate-500 uppercase tracking-widest flex items-center gap-2">
+                        <ShieldPlus size={12} className="text-neon-cyan" /> Promote grants role:
+                    </span>
+                    {["Operator", "Analyst", "Moderator", "Lead"].map(r => (
+                        <button
+                            key={r}
+                            onClick={() => setPromoteRole(r)}
+                            className={`px-3 py-1.5 rounded-xl text-[9px] font-black uppercase tracking-widest transition-all ${promoteRole === r ? "bg-neon-cyan text-vpoint-dark" : "glass border border-white/10 text-slate-500 hover:text-white"}`}
+                        >
+                            {r}
+                        </button>
+                    ))}
+                </div>
+            )}
+
+            {/* Credentials Reveal Modal */}
+            <AnimatePresence>
+                {promoted && (
+                    <div className="fixed inset-0 z-50 flex items-center justify-center">
+                        <motion.div
+                            initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+                            className="absolute inset-0 bg-black/80 backdrop-blur-xl"
+                            onClick={() => setPromoted(null)}
+                        />
+                        <motion.div
+                            initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.9 }}
+                            className="relative z-10 glass border border-neon-cyan/20 rounded-[2rem] p-10 max-w-md w-full space-y-6"
+                        >
+                            <div className="flex items-center gap-3">
+                                <ShieldPlus size={24} className="text-neon-cyan" />
+                                <div>
+                                    <h3 className="text-xl font-black text-white uppercase">Operator Promoted!</h3>
+                                    <p className="text-[9px] text-slate-500 uppercase tracking-widest">Save these credentials — shown only once</p>
+                                </div>
+                            </div>
+                            <div className="space-y-3">
+                                <div className="p-4 bg-white/5 border border-white/10 rounded-2xl">
+                                    <p className="text-[9px] font-black text-slate-500 uppercase tracking-widest mb-1">Operator Name</p>
+                                    <p className="text-sm font-black text-white">{promoted!.name}</p>
+                                </div>
+                                <div className="p-4 bg-neon-cyan/5 border border-neon-cyan/20 rounded-2xl">
+                                    <p className="text-[9px] font-black text-neon-cyan uppercase tracking-widest mb-1">Login ID</p>
+                                    <p className="text-xl font-mono font-black text-white tracking-widest">{promoted!.loginId}</p>
+                                </div>
+                                <div className="p-4 bg-amber-500/5 border border-amber-500/20 rounded-2xl">
+                                    <p className="text-[9px] font-black text-amber-400 uppercase tracking-widest mb-1">Auto-Generated Password</p>
+                                    <p className="text-xl font-mono font-black text-white tracking-widest">{promoted!.password}</p>
+                                </div>
+                            </div>
+                            <div className="flex gap-4">
+                                <button
+                                    onClick={copyAll}
+                                    className={`flex-1 py-4 flex items-center justify-center gap-2 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all ${copied ? "bg-emerald-500 text-white" : "glass border border-white/10 text-slate-400 hover:text-white"}`}
+                                >
+                                    {copied ? <><Check size={14} /> Copied!</> : <><Copy size={14} /> Copy Credentials</>}
+                                </button>
+                                <button
+                                    onClick={() => setPromoted(null)}
+                                    className="flex-1 py-4 bg-neon-cyan text-vpoint-dark rounded-2xl text-[10px] font-black uppercase tracking-widest hover:bg-cyan-300 transition-all"
+                                >
+                                    Done
+                                </button>
+                            </div>
+                        </motion.div>
+                    </div>
+                )}
+            </AnimatePresence>
+
+            {/* Delete Confirm Modal */}
+            <AnimatePresence>
+                {confirmDelete && (
+                    <div className="fixed inset-0 z-50 flex items-center justify-center">
+                        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="absolute inset-0 bg-black/80 backdrop-blur-xl" onClick={() => setConfirmDelete(null)} />
+                        <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.9 }} className="relative z-10 glass border border-red-500/20 rounded-[2rem] p-10 max-w-sm w-full text-center space-y-6">
+                            <AlertTriangle size={40} className="text-red-400 mx-auto" />
+                            <div>
+                                <h3 className="text-xl font-black text-white uppercase">Terminate User?</h3>
+                                <p className="text-[10px] text-slate-500 uppercase tracking-widest mt-2">This action is permanent and cannot be undone.</p>
+                            </div>
+                            <div className="flex gap-4">
+                                <button onClick={() => setConfirmDelete(null)} className="flex-1 py-4 glass border border-white/10 rounded-2xl text-[10px] font-black text-slate-500 uppercase hover:text-white transition-colors">Cancel</button>
+                                <button onClick={() => handleDelete(confirmDelete)} className="flex-1 py-4 bg-red-500 text-white rounded-2xl text-[10px] font-black uppercase hover:bg-red-400 transition-colors">Confirm</button>
+                            </div>
+                        </motion.div>
+                    </div>
+                )}
+            </AnimatePresence>
         </div>
     );
 }

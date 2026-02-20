@@ -1,7 +1,7 @@
 "use server";
 
 import { db } from "./db";
-import { operators, adminLogs } from "./schema";
+import { operators, adminLogs, users } from "./schema";
 import { eq } from "drizzle-orm";
 import bcrypt from "bcryptjs";
 import { revalidatePath } from "next/cache";
@@ -226,5 +226,61 @@ export async function initSuperAdmin() {
     } catch (e: any) {
         console.error("initSuperAdmin failed:", e);
         return null;
+    }
+}
+
+// ─── Promote a registered user to Operator (Super Admin only) ─────────────────
+export async function promoteUserToOperator(
+    userId: string,
+    role: string = "Operator",
+    actorName: string = "Super Admin"
+) {
+    try {
+        // Fetch the user
+        const userResult = await db.select().from(users).where(eq(users.id, userId));
+        if (userResult.length === 0) return { success: false, error: "User not found." };
+        const user = userResult[0];
+
+        // Auto-generate unique login ID: OP- + 6 random alphanumeric chars
+        const randomSuffix = Math.random().toString(36).toUpperCase().slice(2, 8);
+        const loginId = `OP-${randomSuffix}`;
+
+        // Auto-generate a random 10-char password
+        const rawPassword = Math.random().toString(36).slice(2, 8).toUpperCase() +
+            Math.random().toString(36).slice(2, 6) + "!";
+        const hashedPassword = await bcrypt.hash(rawPassword, 10);
+
+        // Create operator row
+        await db.insert(operators).values({
+            name: user.name,
+            loginId,
+            password: hashedPassword,
+            role,
+            isSuperAdmin: false,
+            status: "Active",
+        });
+
+        await logAdminAction(
+            "PROMOTE_USER_TO_OPERATOR",
+            user.name,
+            `Promoted by ${actorName} | Email: ${user.email} | Role: ${role} | Login ID: ${loginId}`,
+            "OPERATOR",
+            actorName
+        );
+
+        revalidatePath("/admin/users");
+        revalidatePath("/admin/operators");
+
+        return {
+            success: true,
+            credentials: {
+                name: user.name,
+                loginId,
+                password: rawPassword,  // plain text — shown once to SA
+            }
+        };
+    } catch (e: any) {
+        console.error("promoteUserToOperator failed:", e);
+        return { success: false, error: e?.message || "Promotion failed." };
     }
 }
