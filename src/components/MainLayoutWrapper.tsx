@@ -210,10 +210,61 @@ export default function MainLayoutWrapper({ children }: { children: React.ReactN
         };
     }, [isMounted, handleCinemaToggle, handleSettingsChange, handleOpenSettings, handleSidebarToggle, handleChannelSelectSync]);
 
+    // Maintenance Mode Overlay
+    const isMaintenanceActive = config.maintenanceMode && !isAdminSector;
+
     if (!isMounted) return <div className="fixed inset-0 bg-vpoint-dark" />;
 
     return (
         <div className={`flex w-full h-screen overflow-hidden vpoint-bg transition-colors duration-300 ${theme === 'magenta' ? 'theme-magenta' : ''}`}>
+            <AnimatePresence>
+                {isMaintenanceActive && (
+                    <motion.div
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        className="fixed inset-0 z-[1000] bg-vpoint-dark flex items-center justify-center p-10 overflow-hidden"
+                    >
+                        {/* Maintenance Background */}
+                        <div className="absolute inset-0 opacity-20 pointer-events-none">
+                            <div className="w-full h-full border-[0.5px] border-white/5 grid grid-cols-12 grid-rows-12">
+                                {[...Array(144)].map((_, i) => (
+                                    <div key={i} className="border-[0.5px] border-white/5" />
+                                ))}
+                            </div>
+                        </div>
+
+                        <div className="relative z-10 max-w-2xl w-full text-center space-y-12">
+                            <motion.div
+                                animate={{ scale: [1, 1.05, 1], rotate: [0, 1, -1, 0] }}
+                                transition={{ duration: 4, repeat: Infinity }}
+                                className="w-32 h-32 mx-auto bg-neon-magenta/10 border border-neon-magenta/30 rounded-[2rem] flex items-center justify-center text-neon-magenta"
+                            >
+                                <Shield size={64} />
+                            </motion.div>
+
+                            <div className="space-y-4">
+                                <h1 className="text-5xl lg:text-7xl font-black text-white uppercase tracking-tighter italic">
+                                    System <span className="text-neon-magenta">Maintenance</span>
+                                </h1>
+                                <p className="text-[12px] font-black text-slate-500 uppercase tracking-[0.5em]">Sector Lockdown in Progress</p>
+                            </div>
+
+                            <p className="text-slate-400 text-sm font-medium leading-relaxed italic border-l-2 border-neon-magenta/30 pl-6 text-left max-w-md mx-auto">
+                                The Viewpoint matrix is currently undergoing scheduled structural refinement. Signal stability is being recalibrated for enhanced digital density.
+                                <span className="block mt-4 text-neon-magenta/70 font-bold uppercase text-[10px]">Access Restoration: PENDING</span>
+                            </p>
+
+                            <div className="pt-10 opacity-30 flex items-center justify-center gap-10">
+                                <div className="flex items-center gap-2">
+                                    <div className="w-1.5 h-1.5 rounded-full bg-neon-magenta" />
+                                    <span className="text-[8px] font-black text-slate-500 uppercase tracking-widest italic tracking-[0.3em]">Institutional Integrity ACTIVE</span>
+                                </div>
+                            </div>
+                        </div>
+                    </motion.div>
+                )}
+            </AnimatePresence>
+
             <AnimatePresence>
                 {isSidebarOpen && isMobile && isWatchPage && (
                     <motion.div

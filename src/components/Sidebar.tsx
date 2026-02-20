@@ -31,6 +31,7 @@ import {
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import Link from "next/link";
+import { useConfig } from "./ConfigContext";
 
 interface Channel {
     id: string;
@@ -188,6 +189,7 @@ interface SidebarProps {
 }
 
 export default function Sidebar({ onClose, activeChannelUrl }: SidebarProps) {
+    const { config } = useConfig();
     const [channels, setChannels] = useState<Channel[]>(initialChannels);
     const [searchQuery, setSearchQuery] = useState("");
     const [activeCategory, setActiveCategory] = useState("All");
@@ -274,7 +276,9 @@ export default function Sidebar({ onClose, activeChannelUrl }: SidebarProps) {
                 <Link href="/#hero" className="flex items-center gap-3 group">
                     <div className="flex flex-col">
                         <h2 className="text-sm lg:text-xl font-black text-white tracking-tighter uppercase leading-none">
-                            VIEW<span className="text-neon-purple">POINT</span>
+                            {config.brandingText.split('').map((char: string, i: number) => (
+                                <span key={i} className={i >= config.brandingText.length - 5 ? "text-neon-purple" : ""}>{char}</span>
+                            ))}
                         </h2>
                         <p className="text-[7px] font-black text-slate-500 uppercase tracking-[0.3em] mt-1">Premium Streaming</p>
                     </div>
@@ -469,7 +473,7 @@ export default function Sidebar({ onClose, activeChannelUrl }: SidebarProps) {
                 </button>
 
                 <div className="px-2 flex items-center justify-between text-slate-800">
-                    <span className="text-[7px] font-black uppercase tracking-widest">VIEWPOINT MODULE v2.0.4</span>
+                    <span className="text-[7px] font-black uppercase tracking-widest">{config.brandingText} MODULE v{config.version}</span>
                     <div className="w-1.5 h-1.5 rounded-full bg-emerald-500/20" />
                 </div>
             </div>

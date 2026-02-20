@@ -2,11 +2,13 @@
 
 import React, { useState, useEffect } from "react";
 import { Menu } from "lucide-react";
+import { useConfig } from "./ConfigContext";
 
 export default function TopBar() {
+    const { config } = useConfig();
     const [uptime, setUptime] = useState(49);
     const [playerStatus, setPlayerStatus] = useState<"Playing" | "Paused" | "Buffering" | "Error" | "Standby">("Standby");
-    const [channelTitle, setChannelTitle] = useState("NO SIGNAL DETECTED");
+    const [channelTitle, setChannelTitle] = useState(config.brandingText + " SIGNAL");
     const [channelCategory, setChannelCategory] = useState("Awaiting Stream");
 
     const [networkType, setNetworkType] = useState<string>("5G");
