@@ -94,101 +94,48 @@ export default function MainLayoutWrapper({ children }: { children: React.ReactN
         }
     }, [isMounted]);
 
-    // DevTools Protection
+    // DevTools Protection — false-positive-safe version
     useEffect(() => {
         if (!isMounted || pathname === "/warning") return;
 
+        // Block right-click context menu
         const handleContextMenu = (e: MouseEvent) => {
             e.preventDefault();
         };
 
+        // Block common devtools keyboard shortcuts
         const handleKeyDown = (e: KeyboardEvent) => {
-            // Block F12
             if (e.key === "F12") {
                 e.preventDefault();
                 router.push("/warning");
             }
-            // Block Ctrl+Shift+I, J, C
             if (e.ctrlKey && e.shiftKey && (e.key === "I" || e.key === "J" || e.key === "C")) {
                 e.preventDefault();
                 router.push("/warning");
             }
-            // Block Ctrl+U (View Source)
             if (e.ctrlKey && (e.key === "u" || e.key === "U")) {
                 e.preventDefault();
                 router.push("/warning");
             }
         };
 
-        // Ultra-Robust DevTools Detection
-        const detectDevTools = () => {
-            // Method 1: Window Size Comparison
+        // Window size check — only on explicit resize, not on load
+        const detectDevToolsOnResize = () => {
             const threshold = 160;
-            const isDevToolsOpenBySize =
+            const isOpen =
                 window.outerWidth - window.innerWidth > threshold ||
                 window.outerHeight - window.innerHeight > threshold;
-
-            if (isDevToolsOpenBySize) {
-                router.push("/warning");
-                return true;
-            }
-
-            // Method 2: Performance Timing (Debugger Trap)
-            const startTime = performance.now();
-            (function () {
-                return false;
-            })["constructor"]("debugger")["call"]();
-            if (performance.now() - startTime > 100) {
-                router.push("/warning");
-                return true;
-            }
-
-            return false;
+            if (isOpen) router.push("/warning");
         };
-
-        // Method 3: Browser Cache Detection
-        const checkCache = () => {
-            try {
-                const navEntry = window.performance.getEntriesByType("navigation")[0] as any;
-                // If transferSize is 0, it typically indicates the resource was served from cache
-                // DeliveryType 'cache' is a more direct indicator in modern browsers
-                if (navEntry && (navEntry.transferSize === 0 || navEntry.deliveryType === 'cache')) {
-                    router.push("/warning"); // Redirect to ensure structural integrity
-                }
-            } catch (e) {
-                console.error("Matrix Integrity Check Failed", e);
-            }
-        };
-
-        // Method 4: Console Trap (Custom Getter)
-        const element = new Image();
-        Object.defineProperty(element, 'id', {
-            get: () => {
-                router.push("/warning");
-            }
-        });
-
-        const checkConsole = () => {
-            // Trigger the getter if the console is open and trying to render the object
-            console.log('%c', element);
-        }
 
         window.addEventListener("contextmenu", handleContextMenu);
         window.addEventListener("keydown", handleKeyDown);
-        window.addEventListener("resize", detectDevTools);
-
-        // High-frequency polling for detection
-        const detectionInterval = setInterval(() => {
-            detectDevTools();
-            checkConsole();
-            checkCache();
-        }, 500); // 500ms for even faster detection
+        window.addEventListener("resize", detectDevToolsOnResize);
 
         return () => {
             window.removeEventListener("contextmenu", handleContextMenu);
             window.removeEventListener("keydown", handleKeyDown);
-            window.removeEventListener("resize", detectDevTools);
-            clearInterval(detectionInterval);
+            window.removeEventListener("resize", detectDevToolsOnResize);
         };
     }, [isMounted, pathname, router]);
 
